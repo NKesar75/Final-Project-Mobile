@@ -1,0 +1,11 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var flatten = require(_dependencyMap[0], './flatten'),
+      overRest = require(_dependencyMap[1], './_overRest'),
+      setToString = require(_dependencyMap[2], './_setToString');
+
+  function flatRest(func) {
+    return setToString(overRest(func, undefined, flatten), func + '');
+  }
+
+  module.exports = flatRest;
+});

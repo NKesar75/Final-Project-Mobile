@@ -1,0 +1,14 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+    var baseIsArguments = require(_dependencyMap[0], './_baseIsArguments'),
+        isObjectLike = require(_dependencyMap[1], './isObjectLike');
+
+    var objectProto = Object.prototype;
+    var hasOwnProperty = objectProto.hasOwnProperty;
+    var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+    var isArguments = baseIsArguments(function () {
+        return arguments;
+    }()) ? baseIsArguments : function (value) {
+        return isObjectLike(value) && hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
+    };
+    module.exports = isArguments;
+});

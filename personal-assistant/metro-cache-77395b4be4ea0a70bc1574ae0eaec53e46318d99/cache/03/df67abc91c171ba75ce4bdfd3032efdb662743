@@ -1,0 +1,10 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var v1 = require(_dependencyMap[0], './v1');
+
+  var v4 = require(_dependencyMap[1], './v4');
+
+  var uuid = v4;
+  uuid.v1 = v1;
+  uuid.v4 = v4;
+  module.exports = uuid;
+});

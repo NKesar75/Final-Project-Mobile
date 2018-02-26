@@ -1,0 +1,9 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var baseIsEqual = require(_dependencyMap[0], './_baseIsEqual');
+
+  function isEqual(value, other) {
+    return baseIsEqual(value, other);
+  }
+
+  module.exports = isEqual;
+});

@@ -1,0 +1,31 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var binaryToBase64 = require(_dependencyMap[0], "binaryToBase64");
+
+  var FormData = require(_dependencyMap[1], "FormData");
+
+  function convertRequestBody(body) {
+    if (typeof body === 'string') {
+      return {
+        string: body
+      };
+    }
+
+    if (body instanceof FormData) {
+      return {
+        formData: body.getParts()
+      };
+    }
+
+    if (body instanceof ArrayBuffer || ArrayBuffer.isView(body)) {
+      return {
+        base64: binaryToBase64(body)
+      };
+    }
+
+    return body;
+  }
+
+  module.exports = convertRequestBody;
+});

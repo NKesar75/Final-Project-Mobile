@@ -1,0 +1,25 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var baseMatches = require(_dependencyMap[0], './_baseMatches'),
+      baseMatchesProperty = require(_dependencyMap[1], './_baseMatchesProperty'),
+      identity = require(_dependencyMap[2], './identity'),
+      isArray = require(_dependencyMap[3], './isArray'),
+      property = require(_dependencyMap[4], './property');
+
+  function baseIteratee(value) {
+    if (typeof value == 'function') {
+      return value;
+    }
+
+    if (value == null) {
+      return identity;
+    }
+
+    if (typeof value == 'object') {
+      return isArray(value) ? baseMatchesProperty(value[0], value[1]) : baseMatches(value);
+    }
+
+    return property(value);
+  }
+
+  module.exports = baseIteratee;
+});

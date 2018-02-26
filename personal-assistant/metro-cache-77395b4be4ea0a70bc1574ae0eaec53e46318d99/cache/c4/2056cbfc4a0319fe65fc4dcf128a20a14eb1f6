@@ -1,0 +1,11 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var TextInputState = require(_dependencyMap[0], "TextInputState");
+
+  function dismissKeyboard() {
+    TextInputState.blurTextInput(TextInputState.currentlyFocusedField());
+  }
+
+  module.exports = dismissKeyboard;
+});

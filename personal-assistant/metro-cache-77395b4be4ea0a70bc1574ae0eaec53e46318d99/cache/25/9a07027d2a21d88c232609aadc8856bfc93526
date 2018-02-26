@@ -1,0 +1,9 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var baseIsSet = require(_dependencyMap[0], './_baseIsSet'),
+      baseUnary = require(_dependencyMap[1], './_baseUnary'),
+      nodeUtil = require(_dependencyMap[2], './_nodeUtil');
+
+  var nodeIsSet = nodeUtil && nodeUtil.isSet;
+  var isSet = nodeIsSet ? baseUnary(nodeIsSet) : baseIsSet;
+  module.exports = isSet;
+});

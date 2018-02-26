@@ -1,0 +1,11 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var baseGet = require(_dependencyMap[0], './_baseGet');
+
+  function basePropertyDeep(path) {
+    return function (object) {
+      return baseGet(object, path);
+    };
+  }
+
+  module.exports = basePropertyDeep;
+});

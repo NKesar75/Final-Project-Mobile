@@ -1,0 +1,9 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var basePick = require(_dependencyMap[0], './_basePick'),
+      flatRest = require(_dependencyMap[1], './_flatRest');
+
+  var pick = flatRest(function (object, paths) {
+    return object == null ? {} : basePick(object, paths);
+  });
+  module.exports = pick;
+});

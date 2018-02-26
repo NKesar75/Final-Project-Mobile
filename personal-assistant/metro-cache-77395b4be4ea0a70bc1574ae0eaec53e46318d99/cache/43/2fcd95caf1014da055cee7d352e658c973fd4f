@@ -1,0 +1,12 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var getTag = require(_dependencyMap[0], './_getTag'),
+      isObjectLike = require(_dependencyMap[1], './isObjectLike');
+
+  var setTag = '[object Set]';
+
+  function baseIsSet(value) {
+    return isObjectLike(value) && getTag(value) == setTag;
+  }
+
+  module.exports = baseIsSet;
+});

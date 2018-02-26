@@ -1,0 +1,6 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var root = require(_dependencyMap[0], './_root');
+
+  var Symbol = root.Symbol;
+  module.exports = Symbol;
+});

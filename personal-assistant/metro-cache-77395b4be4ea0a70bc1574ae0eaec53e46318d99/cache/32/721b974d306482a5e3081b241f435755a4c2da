@@ -1,0 +1,25 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+    var listCacheClear = require(_dependencyMap[0], './_listCacheClear'),
+        listCacheDelete = require(_dependencyMap[1], './_listCacheDelete'),
+        listCacheGet = require(_dependencyMap[2], './_listCacheGet'),
+        listCacheHas = require(_dependencyMap[3], './_listCacheHas'),
+        listCacheSet = require(_dependencyMap[4], './_listCacheSet');
+
+    function ListCache(entries) {
+        var index = -1,
+            length = entries == null ? 0 : entries.length;
+        this.clear();
+
+        while (++index < length) {
+            var entry = entries[index];
+            this.set(entry[0], entry[1]);
+        }
+    }
+
+    ListCache.prototype.clear = listCacheClear;
+    ListCache.prototype['delete'] = listCacheDelete;
+    ListCache.prototype.get = listCacheGet;
+    ListCache.prototype.has = listCacheHas;
+    ListCache.prototype.set = listCacheSet;
+    module.exports = ListCache;
+});

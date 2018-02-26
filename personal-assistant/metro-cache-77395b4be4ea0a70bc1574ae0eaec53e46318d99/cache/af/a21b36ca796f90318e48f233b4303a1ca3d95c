@@ -1,0 +1,24 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var NativeModules = require(_dependencyMap[0], "NativeModules");
+
+  var Platform = {
+    OS: 'android',
+
+    get Version() {
+      var constants = NativeModules.PlatformConstants;
+      return constants && constants.Version;
+    },
+
+    get isTesting() {
+      var constants = NativeModules.PlatformConstants;
+      return constants && constants.isTesting;
+    },
+
+    select: function select(obj) {
+      return 'android' in obj ? obj.android : obj.default;
+    }
+  };
+  module.exports = Platform;
+});

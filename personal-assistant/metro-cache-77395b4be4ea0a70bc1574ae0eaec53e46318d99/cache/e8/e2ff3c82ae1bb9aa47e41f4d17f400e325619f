@@ -1,0 +1,11 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+    var baseDifference = require(_dependencyMap[0], './_baseDifference'),
+        baseFlatten = require(_dependencyMap[1], './_baseFlatten'),
+        baseRest = require(_dependencyMap[2], './_baseRest'),
+        isArrayLikeObject = require(_dependencyMap[3], './isArrayLikeObject');
+
+    var difference = baseRest(function (array, values) {
+        return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true)) : [];
+    });
+    module.exports = difference;
+});

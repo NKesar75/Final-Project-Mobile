@@ -1,0 +1,14 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var Clipboard = require(_dependencyMap[0], "NativeModules").Clipboard;
+
+  module.exports = {
+    getString: function getString() {
+      return Clipboard.getString();
+    },
+    setString: function setString(content) {
+      Clipboard.setString(content);
+    }
+  };
+});

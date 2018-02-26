@@ -1,0 +1,8 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  exports.version = {
+    major: 0,
+    minor: 52,
+    patch: 0,
+    prerelease: null
+  };
+});

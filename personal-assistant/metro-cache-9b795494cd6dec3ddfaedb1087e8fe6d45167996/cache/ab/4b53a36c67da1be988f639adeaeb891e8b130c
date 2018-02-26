@@ -1,0 +1,7 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+    var getNative = require(_dependencyMap[0], './_getNative'),
+        root = require(_dependencyMap[1], './_root');
+
+    var Map = getNative(root, 'Map');
+    module.exports = Map;
+});

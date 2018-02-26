@@ -1,0 +1,230 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  if (global.GLOBAL === undefined) {
+    global.GLOBAL = global;
+  }
+
+  if (global.window === undefined) {
+    global.window = global;
+  }
+
+  var defineLazyObjectProperty = require(_dependencyMap[0], "defineLazyObjectProperty");
+
+  var _shouldPolyfillCollection = require(_dependencyMap[1], "_shouldPolyfillES6Collection");
+
+  if (_shouldPolyfillCollection('Map')) {
+    polyfillGlobal('Map', function () {
+      return require(_dependencyMap[2], "Map");
+    });
+  }
+
+  if (_shouldPolyfillCollection('Set')) {
+    polyfillGlobal('Set', function () {
+      return require(_dependencyMap[3], "Set");
+    });
+  }
+
+  function defineLazyProperty(object, name, getValue) {
+    var descriptor = Object.getOwnPropertyDescriptor(object, name);
+
+    if (__DEV__ && descriptor) {
+      var backupName = "original" + name[0].toUpperCase() + name.substr(1);
+      Object.defineProperty(object, backupName, _extends({}, descriptor, {
+        value: object[name]
+      }));
+    }
+
+    var _ref = descriptor || {},
+        enumerable = _ref.enumerable,
+        writable = _ref.writable,
+        configurable = _ref.configurable;
+
+    if (descriptor && !configurable) {
+      console.error('Failed to set polyfill. ' + name + ' is not configurable.');
+      return;
+    }
+
+    defineLazyObjectProperty(object, name, {
+      get: getValue,
+      enumerable: enumerable !== false,
+      writable: writable !== false
+    });
+  }
+
+  function polyfillGlobal(name, getValue) {
+    defineLazyProperty(global, name, getValue);
+  }
+
+  global.process = global.process || {};
+  global.process.env = global.process.env || {};
+
+  if (!global.process.env.NODE_ENV) {
+    global.process.env.NODE_ENV = __DEV__ ? 'development' : 'production';
+  }
+
+  if (global.__RCTProfileIsProfiling) {
+    var Systrace = require(_dependencyMap[4], "Systrace");
+
+    Systrace.installReactHook(true);
+    Systrace.setEnabled(true);
+  }
+
+  var ExceptionsManager = require(_dependencyMap[5], "ExceptionsManager");
+
+  ExceptionsManager.installConsoleErrorReporter();
+
+  if (!global.__fbDisableExceptionsManager) {
+    var handleError = function handleError(e, isFatal) {
+      try {
+        ExceptionsManager.handleException(e, isFatal);
+      } catch (ee) {
+        console.log('Failed to print error: ', ee.message);
+        throw e;
+      }
+    };
+
+    var ErrorUtils = require(_dependencyMap[6], "ErrorUtils");
+
+    ErrorUtils.setGlobalHandler(handleError);
+  }
+
+  var ReactNativeVersionCheck = require(_dependencyMap[7], "ReactNativeVersionCheck");
+
+  ReactNativeVersionCheck.checkVersions();
+  polyfillGlobal('Promise', function () {
+    return require(_dependencyMap[8], "Promise");
+  });
+  polyfillGlobal('regeneratorRuntime', function () {
+    delete global.regeneratorRuntime;
+
+    require(_dependencyMap[9], "regenerator-runtime/runtime");
+
+    return global.regeneratorRuntime;
+  });
+
+  var defineLazyTimer = function defineLazyTimer(name) {
+    polyfillGlobal(name, function () {
+      return require(_dependencyMap[10], "JSTimers")[name];
+    });
+  };
+
+  defineLazyTimer('setTimeout');
+  defineLazyTimer('setInterval');
+  defineLazyTimer('setImmediate');
+  defineLazyTimer('clearTimeout');
+  defineLazyTimer('clearInterval');
+  defineLazyTimer('clearImmediate');
+  defineLazyTimer('requestAnimationFrame');
+  defineLazyTimer('cancelAnimationFrame');
+  defineLazyTimer('requestIdleCallback');
+  defineLazyTimer('cancelIdleCallback');
+  polyfillGlobal('XMLHttpRequest', function () {
+    return require(_dependencyMap[11], "XMLHttpRequest");
+  });
+  polyfillGlobal('FormData', function () {
+    return require(_dependencyMap[12], "FormData");
+  });
+  polyfillGlobal('fetch', function () {
+    return require(_dependencyMap[13], "fetch").fetch;
+  });
+  polyfillGlobal('Headers', function () {
+    return require(_dependencyMap[13], "fetch").Headers;
+  });
+  polyfillGlobal('Request', function () {
+    return require(_dependencyMap[13], "fetch").Request;
+  });
+  polyfillGlobal('Response', function () {
+    return require(_dependencyMap[13], "fetch").Response;
+  });
+  polyfillGlobal('WebSocket', function () {
+    return require(_dependencyMap[14], "WebSocket");
+  });
+  polyfillGlobal('Blob', function () {
+    return require(_dependencyMap[15], "Blob");
+  });
+  polyfillGlobal('URL', function () {
+    return require(_dependencyMap[16], "URL");
+  });
+
+  if (!global.alert) {
+    global.alert = function (text) {
+      require(_dependencyMap[17], "Alert").alert('Alert', '' + text);
+    };
+  }
+
+  var navigator = global.navigator;
+
+  if (navigator === undefined) {
+    global.navigator = navigator = {};
+  }
+
+  defineLazyProperty(navigator, 'product', function () {
+    return 'ReactNative';
+  });
+  defineLazyProperty(navigator, 'geolocation', function () {
+    return require(_dependencyMap[18], "Geolocation");
+  });
+
+  var BatchedBridge = require(_dependencyMap[19], "BatchedBridge");
+
+  BatchedBridge.registerLazyCallableModule('Systrace', function () {
+    return require(_dependencyMap[4], "Systrace");
+  });
+  BatchedBridge.registerLazyCallableModule('JSTimers', function () {
+    return require(_dependencyMap[10], "JSTimers");
+  });
+  BatchedBridge.registerLazyCallableModule('HeapCapture', function () {
+    return require(_dependencyMap[20], "HeapCapture");
+  });
+  BatchedBridge.registerLazyCallableModule('SamplingProfiler', function () {
+    return require(_dependencyMap[21], "SamplingProfiler");
+  });
+  BatchedBridge.registerLazyCallableModule('RCTLog', function () {
+    return require(_dependencyMap[22], "RCTLog");
+  });
+  BatchedBridge.registerLazyCallableModule('RCTDeviceEventEmitter', function () {
+    return require(_dependencyMap[23], "RCTDeviceEventEmitter");
+  });
+  BatchedBridge.registerLazyCallableModule('RCTNativeAppEventEmitter', function () {
+    return require(_dependencyMap[24], "RCTNativeAppEventEmitter");
+  });
+  BatchedBridge.registerLazyCallableModule('PerformanceLogger', function () {
+    return require(_dependencyMap[25], "PerformanceLogger");
+  });
+
+  global.fetchSegment = function (segmentId, callback) {
+    var _require = require(_dependencyMap[26], "NativeModules"),
+        SegmentFetcher = _require.SegmentFetcher;
+
+    if (!SegmentFetcher) {
+      throw new Error('SegmentFetcher is missing. Please ensure that it is ' + 'included as a NativeModule.');
+    }
+
+    SegmentFetcher.fetchSegment(segmentId, function (errorObject) {
+      if (errorObject) {
+        var error = new Error(errorObject.message);
+        error.code = errorObject.code;
+        callback(error);
+      }
+
+      callback(null);
+    });
+  };
+
+  if (__DEV__) {
+    if (!global.__RCTProfileIsProfiling) {
+      BatchedBridge.registerCallableModule('HMRClient', require(_dependencyMap[27], "HMRClient"));
+
+      if (!window.document) {
+        require(_dependencyMap[28], "setupDevtools");
+      }
+
+      var JSInspector = require(_dependencyMap[29], "JSInspector");
+
+      JSInspector.registerAgent(require(_dependencyMap[30], "NetworkAgent"));
+    }
+  }
+});

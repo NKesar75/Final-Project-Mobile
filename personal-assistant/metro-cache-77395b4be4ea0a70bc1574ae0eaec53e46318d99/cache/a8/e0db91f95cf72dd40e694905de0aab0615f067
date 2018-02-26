@@ -1,0 +1,35 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var register = function register() {};
+
+  if (__DEV__) {
+    var AppState = require(_dependencyMap[0], "AppState");
+
+    var WebSocket = require(_dependencyMap[1], "WebSocket");
+
+    var _require = require(_dependencyMap[2], "NativeModules"),
+        PlatformConstants = _require.PlatformConstants;
+
+    var reactDevTools = require(_dependencyMap[3], "react-devtools-core");
+
+    if (WebSocket.isAvailable) {
+      var _isAppActive = function _isAppActive() {
+        return AppState.currentState !== 'background';
+      };
+
+      var _host = PlatformConstants && PlatformConstants.ServerHost ? PlatformConstants.ServerHost.split(':')[0] : 'localhost';
+
+      reactDevTools.connectToDevTools({
+        isAppActive: _isAppActive,
+        host: _host,
+        port: window.__REACT_DEVTOOLS_PORT__,
+        resolveRNStyle: require(_dependencyMap[4], "flattenStyle")
+      });
+    }
+  }
+
+  module.exports = {
+    register: register
+  };
+});

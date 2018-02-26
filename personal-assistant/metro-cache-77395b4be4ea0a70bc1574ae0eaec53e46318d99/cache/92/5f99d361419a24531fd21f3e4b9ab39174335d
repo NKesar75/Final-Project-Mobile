@@ -1,0 +1,13 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var PropTypes = require(_dependencyMap[0], "prop-types");
+
+  var createStrictShapeTypeChecker = require(_dependencyMap[1], "createStrictShapeTypeChecker");
+
+  var PointPropType = createStrictShapeTypeChecker({
+    x: PropTypes.number,
+    y: PropTypes.number
+  });
+  module.exports = PointPropType;
+});

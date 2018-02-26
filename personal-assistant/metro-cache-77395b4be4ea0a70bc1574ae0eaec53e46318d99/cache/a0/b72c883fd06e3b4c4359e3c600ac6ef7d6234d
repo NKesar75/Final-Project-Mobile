@@ -1,0 +1,270 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  require(_dependencyMap[0], "./environment/validate");
+
+  require(_dependencyMap[1], "./environment/logging");
+
+  require(_dependencyMap[2], "./Location");
+
+  var _reactNative = require(_dependencyMap[3], "react-native");
+
+  var _Constants = require(_dependencyMap[4], "./Constants");
+
+  var _Constants2 = _interopRequireDefault(_Constants);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  if (typeof _Constants2.default.manifest.env === 'object') {
+    _extends(process.env, _Constants2.default.manifest.env);
+  }
+
+  module.exports = {
+    get Crypto() {
+      return _reactNative.NativeModules.ExponentCrypto;
+    },
+
+    get Fabric() {
+      return _reactNative.NativeModules.ExponentFabric;
+    },
+
+    get ImageCropper() {
+      return _reactNative.NativeModules.ExponentImageCropper;
+    },
+
+    get apisAreAvailable() {
+      return require(_dependencyMap[5], './apisAreAvailable').default;
+    },
+
+    get registerRootComponent() {
+      return require(_dependencyMap[6], './launch/registerRootComponent').default;
+    },
+
+    get takeSnapshotAsync() {
+      return require(_dependencyMap[7], './takeSnapshotAsync').default;
+    },
+
+    get Accelerometer() {
+      return require(_dependencyMap[8], './sensor/Accelerometer').default;
+    },
+
+    get Asset() {
+      return require(_dependencyMap[9], './Asset').default;
+    },
+
+    get AuthSession() {
+      return require(_dependencyMap[10], './AuthSession').default;
+    },
+
+    get ErrorRecovery() {
+      return require(_dependencyMap[11], './ErrorRecovery').default;
+    },
+
+    get GLView() {
+      return require(_dependencyMap[12], './GLView').default;
+    },
+
+    get Gyroscope() {
+      return require(_dependencyMap[13], './sensor/Gyroscope').default;
+    },
+
+    get Magnetometer() {
+      return require(_dependencyMap[14], './sensor/Magnetometer').default;
+    },
+
+    get MagnetometerUncalibrated() {
+      return require(_dependencyMap[15], './sensor/MagnetometerUncalibrated').default;
+    },
+
+    get Notifications() {
+      return require(_dependencyMap[16], './Notifications').default;
+    },
+
+    get SQLite() {
+      return require(_dependencyMap[17], './SQLite').default;
+    },
+
+    get AdMobBanner() {
+      return require(_dependencyMap[18], './admob/RNAdMobBanner').default;
+    },
+
+    get PublisherBanner() {
+      return require(_dependencyMap[19], './admob/RNPublisherBanner').default;
+    },
+
+    get AdMobInterstitial() {
+      return require(_dependencyMap[20], './admob/RNAdMobInterstitial');
+    },
+
+    get AdMobRewarded() {
+      return require(_dependencyMap[21], './admob/RNAdMobRewarded');
+    },
+
+    get AppLoading() {
+      return require(_dependencyMap[22], './launch/AppLoading').default;
+    },
+
+    get BarCodeScanner() {
+      return require(_dependencyMap[23], './BarCodeScanner').default;
+    },
+
+    get BlurView() {
+      return require(_dependencyMap[24], './effects/BlurView').default;
+    },
+
+    get Camera() {
+      return require(_dependencyMap[25], './Camera').default;
+    },
+
+    get FaceDetector() {
+      return require(_dependencyMap[26], './FaceDetector').default;
+    },
+
+    get KeepAwake() {
+      return require(_dependencyMap[27], './KeepAwake').default;
+    },
+
+    get LinearGradient() {
+      return require(_dependencyMap[28], './effects/LinearGradient').default;
+    },
+
+    get MapView() {
+      return require(_dependencyMap[29], "react-native-maps");
+    },
+
+    get Modal() {
+      return require(_dependencyMap[30], './modal/Modal').default;
+    },
+
+    get Video() {
+      return require(_dependencyMap[31], './av/Video').default;
+    },
+
+    get WebBrowser() {
+      return require(_dependencyMap[32], './WebBrowser').default;
+    },
+
+    get Svg() {
+      return require(_dependencyMap[33], './Svg').default;
+    },
+
+    get Fingerprint() {
+      return require(_dependencyMap[34], './Fingerprint');
+    },
+
+    get Amplitude() {
+      return require(_dependencyMap[35], './Amplitude').default;
+    },
+
+    get Audio() {
+      return require(_dependencyMap[36], './av/Audio');
+    },
+
+    get Brightness() {
+      return require(_dependencyMap[37], './Brightness');
+    },
+
+    get Calendar() {
+      return require(_dependencyMap[38], './Calendar');
+    },
+
+    get Constants() {
+      return require(_dependencyMap[4], './Constants').default;
+    },
+
+    get Contacts() {
+      return require(_dependencyMap[39], './Contacts');
+    },
+
+    get DangerZone() {
+      return require(_dependencyMap[40], './DangerZone');
+    },
+
+    get DocumentPicker() {
+      return require(_dependencyMap[41], './DocumentPicker');
+    },
+
+    get FileSystem() {
+      return require(_dependencyMap[42], './FileSystem');
+    },
+
+    get Font() {
+      return require(_dependencyMap[43], './Font');
+    },
+
+    get Google() {
+      return require(_dependencyMap[44], './Google');
+    },
+
+    get Icon() {
+      return require(_dependencyMap[45], './Icon').default;
+    },
+
+    get ImageManipulator() {
+      return require(_dependencyMap[46], './ImageManipulator');
+    },
+
+    get ImagePicker() {
+      return require(_dependencyMap[47], './ImagePicker');
+    },
+
+    get Location() {
+      return require(_dependencyMap[2], './Location').default;
+    },
+
+    get Logs() {
+      return require(_dependencyMap[48], './logs/Logs').default;
+    },
+
+    get MailComposer() {
+      return require(_dependencyMap[49], './MailComposer');
+    },
+
+    get Pedometer() {
+      return require(_dependencyMap[50], './Pedometer');
+    },
+
+    get Permissions() {
+      return require(_dependencyMap[51], './Permissions');
+    },
+
+    get Facebook() {
+      return require(_dependencyMap[52], './Facebook').default;
+    },
+
+    get FacebookAds() {
+      return require(_dependencyMap[53], './facebook-ads');
+    },
+
+    get IntentLauncherAndroid() {
+      return require(_dependencyMap[54], './IntentLauncherAndroid');
+    },
+
+    get ScreenOrientation() {
+      return require(_dependencyMap[55], './ScreenOrientation');
+    },
+
+    get SecureStore() {
+      return require(_dependencyMap[56], './SecureStore');
+    },
+
+    get Segment() {
+      return require(_dependencyMap[57], './Segment').default;
+    },
+
+    get Speech() {
+      return require(_dependencyMap[58], './Speech');
+    },
+
+    get Util() {
+      return require(_dependencyMap[59], './Util');
+    }
+
+  };
+
+  if (global) {
+    global.__exponent = module.exports;
+    global.__expo = module.exports;
+    global.Expo = module.exports;
+  }
+});

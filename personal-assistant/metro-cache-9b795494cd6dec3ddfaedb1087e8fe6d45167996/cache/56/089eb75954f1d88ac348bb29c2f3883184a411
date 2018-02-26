@@ -1,0 +1,5 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  module.exports = require(_dependencyMap[0], "react");
+});

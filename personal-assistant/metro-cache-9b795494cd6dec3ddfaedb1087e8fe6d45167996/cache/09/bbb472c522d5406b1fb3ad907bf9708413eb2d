@@ -1,0 +1,24 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  module.exports = {
+    get Lottie() {
+      return require(_dependencyMap[0], "lottie-react-native");
+    },
+
+    get Branch() {
+      return require(_dependencyMap[1], "react-native-branch").default;
+    },
+
+    get GestureHandler() {
+      return require(_dependencyMap[2], "react-native-gesture-handler");
+    },
+
+    get Payments() {
+      return require(_dependencyMap[3], './Payments');
+    },
+
+    get DeviceMotion() {
+      return require(_dependencyMap[4], './sensor/DeviceMotion').default;
+    }
+
+  };
+});

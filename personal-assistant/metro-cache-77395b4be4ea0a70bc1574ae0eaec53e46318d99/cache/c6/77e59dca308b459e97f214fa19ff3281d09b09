@@ -1,0 +1,24 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var assignValue = require(_dependencyMap[0], './_assignValue'),
+      copyObject = require(_dependencyMap[1], './_copyObject'),
+      createAssigner = require(_dependencyMap[2], './_createAssigner'),
+      isArrayLike = require(_dependencyMap[3], './isArrayLike'),
+      isPrototype = require(_dependencyMap[4], './_isPrototype'),
+      keys = require(_dependencyMap[5], './keys');
+
+  var objectProto = Object.prototype;
+  var hasOwnProperty = objectProto.hasOwnProperty;
+  var assign = createAssigner(function (object, source) {
+    if (isPrototype(source) || isArrayLike(source)) {
+      copyObject(source, keys(source), object);
+      return;
+    }
+
+    for (var key in source) {
+      if (hasOwnProperty.call(source, key)) {
+        assignValue(object, key, source[key]);
+      }
+    }
+  });
+  module.exports = assign;
+});

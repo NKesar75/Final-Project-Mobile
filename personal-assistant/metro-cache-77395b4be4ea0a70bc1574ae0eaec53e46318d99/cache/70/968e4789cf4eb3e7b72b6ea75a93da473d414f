@@ -1,0 +1,12 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var getTag = require(_dependencyMap[0], './_getTag'),
+      isObjectLike = require(_dependencyMap[1], './isObjectLike');
+
+  var mapTag = '[object Map]';
+
+  function baseIsMap(value) {
+    return isObjectLike(value) && getTag(value) == mapTag;
+  }
+
+  module.exports = baseIsMap;
+});

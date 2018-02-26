@@ -1,0 +1,18 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var baseIsEqualDeep = require(_dependencyMap[0], './_baseIsEqualDeep'),
+      isObjectLike = require(_dependencyMap[1], './isObjectLike');
+
+  function baseIsEqual(value, other, bitmask, customizer, stack) {
+    if (value === other) {
+      return true;
+    }
+
+    if (value == null || other == null || !isObjectLike(value) && !isObjectLike(other)) {
+      return value !== value && other !== other;
+    }
+
+    return baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual, stack);
+  }
+
+  module.exports = baseIsEqual;
+});

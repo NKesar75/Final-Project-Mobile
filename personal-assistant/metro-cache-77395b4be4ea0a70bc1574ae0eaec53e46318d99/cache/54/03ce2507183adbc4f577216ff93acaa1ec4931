@@ -1,0 +1,30 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var invariant = require(_dependencyMap[0], "fbjs/lib/invariant");
+
+  var NativeEventEmitter = require(_dependencyMap[1], "NativeEventEmitter");
+
+  var KeyboardObserver = require(_dependencyMap[2], "NativeModules").KeyboardObserver;
+
+  var dismissKeyboard = require(_dependencyMap[3], "dismissKeyboard");
+
+  var KeyboardEventEmitter = new NativeEventEmitter(KeyboardObserver);
+  var Keyboard = {
+    addListener: function addListener(eventName, callback) {
+      invariant(false, 'Dummy method used for documentation');
+    },
+    removeListener: function removeListener(eventName, callback) {
+      invariant(false, 'Dummy method used for documentation');
+    },
+    removeAllListeners: function removeAllListeners(eventName) {
+      invariant(false, 'Dummy method used for documentation');
+    },
+    dismiss: function dismiss() {
+      invariant(false, 'Dummy method used for documentation');
+    }
+  };
+  Keyboard = KeyboardEventEmitter;
+  Keyboard.dismiss = dismissKeyboard;
+  module.exports = Keyboard;
+});

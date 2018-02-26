@@ -1,0 +1,55 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  var EdgeInsetsPropType = require(_dependencyMap[0], "EdgeInsetsPropType");
+
+  var PlatformViewPropTypes = require(_dependencyMap[1], "PlatformViewPropTypes");
+
+  var PropTypes = require(_dependencyMap[2], "prop-types");
+
+  var StyleSheetPropType = require(_dependencyMap[3], "StyleSheetPropType");
+
+  var ViewStylePropTypes = require(_dependencyMap[4], "ViewStylePropTypes");
+
+  var _require = require(_dependencyMap[5], "ViewAccessibility"),
+      AccessibilityComponentTypes = _require.AccessibilityComponentTypes,
+      AccessibilityTraits = _require.AccessibilityTraits;
+
+  var stylePropType = StyleSheetPropType(ViewStylePropTypes);
+  module.exports = _extends({}, PlatformViewPropTypes, {
+    accessible: PropTypes.bool,
+    accessibilityLabel: PropTypes.node,
+    accessibilityActions: PropTypes.arrayOf(PropTypes.string),
+    accessibilityComponentType: PropTypes.oneOf(AccessibilityComponentTypes),
+    accessibilityLiveRegion: PropTypes.oneOf(['none', 'polite', 'assertive']),
+    importantForAccessibility: PropTypes.oneOf(['auto', 'yes', 'no', 'no-hide-descendants']),
+    accessibilityTraits: PropTypes.oneOfType([PropTypes.oneOf(AccessibilityTraits), PropTypes.arrayOf(PropTypes.oneOf(AccessibilityTraits))]),
+    accessibilityViewIsModal: PropTypes.bool,
+    onAccessibilityAction: PropTypes.func,
+    onAccessibilityTap: PropTypes.func,
+    onMagicTap: PropTypes.func,
+    testID: PropTypes.string,
+    nativeID: PropTypes.string,
+    onResponderGrant: PropTypes.func,
+    onResponderMove: PropTypes.func,
+    onResponderReject: PropTypes.func,
+    onResponderRelease: PropTypes.func,
+    onResponderTerminate: PropTypes.func,
+    onResponderTerminationRequest: PropTypes.func,
+    onStartShouldSetResponder: PropTypes.func,
+    onStartShouldSetResponderCapture: PropTypes.func,
+    onMoveShouldSetResponder: PropTypes.func,
+    onMoveShouldSetResponderCapture: PropTypes.func,
+    hitSlop: EdgeInsetsPropType,
+    onLayout: PropTypes.func,
+    pointerEvents: PropTypes.oneOf(['box-none', 'none', 'box-only', 'auto']),
+    style: stylePropType,
+    removeClippedSubviews: PropTypes.bool,
+    renderToHardwareTextureAndroid: PropTypes.bool,
+    shouldRasterizeIOS: PropTypes.bool,
+    collapsable: PropTypes.bool,
+    needsOffscreenAlphaCompositing: PropTypes.bool
+  });
+});

@@ -1,0 +1,14 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var castPath = require(_dependencyMap[0], './_castPath'),
+      last = require(_dependencyMap[1], './last'),
+      parent = require(_dependencyMap[2], './_parent'),
+      toKey = require(_dependencyMap[3], './_toKey');
+
+  function baseUnset(object, path) {
+    path = castPath(path, object);
+    object = parent(object, path);
+    return object == null || delete object[toKey(last(path))];
+  }
+
+  module.exports = baseUnset;
+});

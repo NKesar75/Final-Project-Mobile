@@ -1,0 +1,10 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  var baseHasIn = require(_dependencyMap[0], './_baseHasIn'),
+      hasPath = require(_dependencyMap[1], './_hasPath');
+
+  function hasIn(object, path) {
+    return object != null && hasPath(object, path, baseHasIn);
+  }
+
+  module.exports = hasIn;
+});

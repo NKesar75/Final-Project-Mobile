@@ -1,0 +1,7 @@
+__d(function (global, require, module, exports, _dependencyMap) {
+  module.exports = {
+    create: require(_dependencyMap[0], './SafeModule'),
+    module: require(_dependencyMap[0], './SafeModule'),
+    component: require(_dependencyMap[1], './SafeComponent')
+  };
+});
