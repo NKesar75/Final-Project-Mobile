@@ -1,6 +1,10 @@
 import React, {Component} from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Image, KeyboardAvoidingView} from 'react-native';
 import logo from "./assests/logo.png";
+import * as Firebase from "firebase"
+//var firebase = require("firebase");
+
+
 
 export default class App extends Component {
   constructor(props){
@@ -10,11 +14,42 @@ export default class App extends Component {
       pass:'text'
     };
   }
-  press = () => {
-    Alert.alert("You have logged in")
+
+  login = () => {
+    Firebase.auth().signInWithEmailAndPassword(this.state.name, this.state.pass)
+  .then((user) => {
+    // If you need to do anything with the user, do it here
+    // The user will be logged in automatically by the
+    // `onAuthStateChanged` listener we set up in App.js earlier
+    alert('logged in');
+    console.log('Logged in');
+  })
+  .catch((error) => {
+    // For details of error codes, see the docs
+    // The message contains the default Firebase string
+    // representation of the error
+    console.log('didn\'t log in');
+    alert('Failed to login. Please try again.');
+
+  });
+
   }
   createacc = () => {
-    Alert.alert("To be implemented")
+    Firebase.auth().createUserWithEmailAndPassword(this.state.name, this.state.pass)
+  .then((user) => {
+    // If you need to do anything with the user, do it here
+    // The user will be logged in automatically by the
+    // `onAuthStateChanged` listener we set up in App.js earlier
+    console.log('Created account');
+  })
+  .catch((error) => {
+    const { code, message } = error;
+    // For details of error codes, see the docs
+    // The message contains the default Firebase string
+    // representation of the error
+    console.log('failed to create account');
+    alert('Failed to create account')
+  });
   }
   forgotpassword = () => {
     Alert.alert("To be implemented")
@@ -22,7 +57,7 @@ export default class App extends Component {
 
   render() {
     return (
-      <View>
+      <KeyboardAvoidingView behavior="padding"style={styles.container}>
       <Image style= {{
         alignSelf: 'center',
         justifyContent: 'center',
@@ -66,8 +101,8 @@ export default class App extends Component {
           }
         })}}
         />
-        <TouchableOpacity style = {styles.btn}
-        onPress={this.press}
+        <TouchableOpacity style = {styles.loginbtn}
+        onPress={this.login}
         >
         <Text style={{
           fontSize: 20,
@@ -75,7 +110,7 @@ export default class App extends Component {
         }}> Login
         </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        <TouchableOpacity style = {styles.btncreate}
        onPress={this.createacc}
        >
         <Text style={{
@@ -85,7 +120,7 @@ export default class App extends Component {
         }}> Create an account
         </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        <TouchableOpacity style = {styles.btn}
        onPress={this.forgotpassword}
        >
         <Text style={{
@@ -95,19 +130,26 @@ export default class App extends Component {
         }}> Forgot Password
         </Text>
         </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
       );
     }
   }
+
+  var config = {
+  apiKey: "AIzaSyA8E94qwPa4Um0UMoG83rOJ_izZVQt-lGE",
+  authDomain: "personalassistant-ec554.firebaseapp.com",
+  databaseURL: "https://personalassistant-ec554.firebaseio.com",
+  storageBucket: "personalassistant-ec554.appspot.com.appspot.com",
+};
+Firebase.initializeApp(config);
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#fff',
-      alignItems: 'center',
       justifyContent: 'center',
     },
-    btn: {
+    loginbtn: {
       height: 40,
       width: 200,
       backgroundColor: '#3373f4',
@@ -116,4 +158,22 @@ export default class App extends Component {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    btn: {
+      height: 40,
+      width: 200,
+      padding: 20,
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    btncreate: {
+      height: 40,
+      width: 250,
+      padding: 20,
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+      
+    }
+
   });
