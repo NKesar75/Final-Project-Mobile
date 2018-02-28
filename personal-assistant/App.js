@@ -4,9 +4,9 @@ import logo from "./assests/logo.png";
 import * as Firebase from "firebase"
 //var firebase = require("firebase");
 
-
-
 export default class App extends Component {
+const { navigate } = this.props.navigation;
+
   constructor(props){
     super(props);
     this.state = {
@@ -23,6 +23,7 @@ export default class App extends Component {
     // `onAuthStateChanged` listener we set up in App.js earlier
     alert('logged in');
     console.log('Logged in');
+    navigate('Homescreen'}
   })
   .catch((error) => {
     // For details of error codes, see the docs
@@ -173,7 +174,7 @@ Firebase.initializeApp(config);
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-      
+
     }
 
   });
