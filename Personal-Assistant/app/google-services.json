@@ -1,0 +1,130 @@
+{
+  "project_info": {
+    "project_number": "720590166253",
+    "firebase_url": "https://personalassistant-ec554.firebaseio.com",
+    "project_id": "personalassistant-ec554",
+    "storage_bucket": "personalassistant-ec554.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:720590166253:android:6d8494d4b8224a6a",
+        "android_client_info": {
+          "package_name": "com.personalassistant.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "720590166253-b93kcq7mobu2dmnb8h1h6d3q0fiq884l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8E94qwPa4Um0UMoG83rOJ_izZVQt-lGE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:720590166253:android:5b2bdae63e743d93",
+        "android_client_info": {
+          "package_name": "com.example.darkness7245.final_project_android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "720590166253-odlrpsniq1cr3vs8cclcnau63qhhm0fk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.darkness7245.final_project_android",
+            "certificate_hash": "ea54a29916c2e29434d8e2c13bd839bf3f2698cc"
+          }
+        },
+        {
+          "client_id": "720590166253-b93kcq7mobu2dmnb8h1h6d3q0fiq884l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8E94qwPa4Um0UMoG83rOJ_izZVQt-lGE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "720590166253-b93kcq7mobu2dmnb8h1h6d3q0fiq884l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:720590166253:android:289f2b4bcfceb8d5",
+        "android_client_info": {
+          "package_name": "domain.hackathon.personal_assistant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "720590166253-4or3dvg2rb4l6eeelrogk8mk4of1hhs5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "domain.hackathon.personal_assistant",
+            "certificate_hash": "c70a394a830c12d11c4af31da10c91247ceeb344"
+          }
+        },
+        {
+          "client_id": "720590166253-b93kcq7mobu2dmnb8h1h6d3q0fiq884l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8E94qwPa4Um0UMoG83rOJ_izZVQt-lGE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "720590166253-b93kcq7mobu2dmnb8h1h6d3q0fiq884l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
