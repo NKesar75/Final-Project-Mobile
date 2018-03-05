@@ -15,27 +15,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-public class MainActivity extends AppCompatActivity {
+public class createaccount extends AppCompatActivity {
     private FirebaseAuth auth;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_createaccount);
 
         auth = FirebaseAuth.getInstance();
 
-
-        final EditText Email = (EditText) findViewById(R.id.txtemail);
+        Button signup = (Button) findViewById(R.id.btncreate);
+        final EditText Email = (EditText) findViewById(R.id.txtcreateemail);
         final EditText Password = (EditText) findViewById(R.id.txtcreatepassword);
 
-        Button login = (Button) findViewById(R.id.btnlogin);
-        Button signup = (Button) findViewById(R.id.btncreateacc);
-
-
-
-        login.setOnClickListener(new View.OnClickListener() {
+        signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String email = Email.getText().toString().trim();
@@ -51,32 +46,31 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                if (password.length() < 6) {
+                    Toast.makeText(getApplicationContext(), "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(createaccount.this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 // If sign in fails, display a message to the user. If sign in succeeds
                                 // the auth state listener will be notified and logic to handle the
                                 // signed in user can be handled in the listener.
                                 if (!task.isSuccessful()) {
-                                    Toast.makeText(MainActivity.this, "Login failed." + task.getException(),
+                                    Toast.makeText(createaccount.this, "Create Account failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    startActivity(new Intent(MainActivity.this, Homescreen.class));
+                                    startActivity(new Intent(createaccount.this, Homescreen.class));
                                     finish();
                                 }
                             }
                         });
+
             }
         });
 
-        signup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, createaccount.class));
-                finish();
-            }
-        });
 
     }
 }

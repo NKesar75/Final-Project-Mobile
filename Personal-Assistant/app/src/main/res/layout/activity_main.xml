@@ -7,7 +7,7 @@
     tools:context="domain.hackathon.personal_assistant.MainActivity">
 
     <EditText
-        android:id="@+id/txtpassword"
+        android:id="@+id/txtcreatepassword"
         android:layout_width="315dp"
         android:layout_height="42dp"
         android:layout_marginBottom="128dp"
@@ -50,7 +50,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtpassword"
+        app:layout_constraintTop_toBottomOf="@+id/txtcreatepassword"
         app:layout_constraintVertical_bias="0.25" />
 
     <ImageView

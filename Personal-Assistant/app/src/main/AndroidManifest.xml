@@ -16,7 +16,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Homescreen"></activity>
+        <activity android:name=".Homescreen" />
+        <activity android:name=".createaccount"></activity>
     </application>
 
 </manifest>
