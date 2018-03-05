@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
                                     Toast.makeText(MainActivity.this, "Login failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    startActivity(new Intent(MainActivity.this, Homescreen.class));
+                                    startActivity(new Intent(MainActivity.this, Homescreen_nav.class));
                                     finish();
                                 }
                             }

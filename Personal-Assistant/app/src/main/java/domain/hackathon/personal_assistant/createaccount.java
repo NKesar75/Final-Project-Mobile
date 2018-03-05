@@ -62,7 +62,7 @@ public class createaccount extends AppCompatActivity {
                                     Toast.makeText(createaccount.this, "Create Account failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    startActivity(new Intent(createaccount.this, Homescreen.class));
+                                    startActivity(new Intent(createaccount.this, Homescreen_nav.class));
                                     finish();
                                 }
                             }
