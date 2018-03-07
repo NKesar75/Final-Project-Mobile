@@ -1,5 +1,6 @@
 package domain.hackathon.personal_assistant;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -73,6 +74,8 @@ public class Homescreen_nav extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.maps) {
+            startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
+
 
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
