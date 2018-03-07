@@ -41,6 +41,7 @@ public class Homescreen extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setItemIconTintList(null);
         navigationView.setNavigationItemSelectedListener(this);
 
 
@@ -62,16 +63,18 @@ public class Homescreen extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_maps) {
+        if (id == R.id.maps) {
 
             // Handle the camera action
-        } else if (id == R.id.nav_maps) {
+        } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_home) {
+        } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.settings) {
+
+        } else if (id == R.id.about) {
 
         }
 

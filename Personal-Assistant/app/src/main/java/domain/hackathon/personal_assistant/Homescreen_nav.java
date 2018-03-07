@@ -72,7 +72,8 @@ public class Homescreen_nav extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.maps) {
+
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
@@ -80,9 +81,9 @@ public class Homescreen_nav extends AppCompatActivity
 
         } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.settings) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.about) {
 
         }
 

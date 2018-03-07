@@ -20,7 +20,7 @@
         </activity>
         <activity
             android:name=".Homescreen"
-            android:theme="@style/Personalasstianttheme" />
+            android:theme="@style/AppTheme" />
         <activity android:name=".createaccount" />
         <activity
             android:name=".Homescreen_nav">

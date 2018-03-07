@@ -19,7 +19,8 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_layout_header"
-        app:menu="@menu/navmenu">
+        app:menu="@menu/navmenu"
+        app:itemIconTint="#FFFF">
 
     </android.support.design.widget.NavigationView>
 
