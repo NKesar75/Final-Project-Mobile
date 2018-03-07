@@ -17,8 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
-            android:theme="@style/Personalasstianttheme">
+            android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,8 +25,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".createaccount" />
-        <activity android:name=".Homescreen_nav"
-            android:theme="@style/AppTheme">
+        <activity android:name=".Homescreen_nav">
 
         </activity>
         <!--
