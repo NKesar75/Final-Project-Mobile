@@ -14,8 +14,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class Homescreen_nav extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private FirebaseAuth auth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,16 +82,22 @@ public class Homescreen_nav extends AppCompatActivity
 
 
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.youtube) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.banking) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.food) {
+
+        } else if (id == R.id.googleSearch) {
+
+        } else if (id == R.id.scheduling) {
 
         } else if (id == R.id.settings) {
 
         } else if (id == R.id.about) {
 
+        } else if (id == R.id.logout){
+//            startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

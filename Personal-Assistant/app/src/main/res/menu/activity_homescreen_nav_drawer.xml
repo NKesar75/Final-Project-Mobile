@@ -9,17 +9,25 @@
             android:icon="@drawable/ic_iconmap"
             android:title="Google Maps" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:id="@+id/youtube"
+            android:icon="@drawable/ic_byoutube"
+            android:title="Youtube" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:id="@+id/banking"
+            android:icon="@drawable/ic_bank"
             android:title="Slideshow" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:id="@+id/food"
+            android:icon="@drawable/ic_food"
+            android:title="Food" />
+        <item
+            android:id="@+id/googleSearch"
+            android:icon="@drawable/ic_search"
+            android:title="Google Search" />
+        <item
+            android:id="@+id/scheduling"
+            android:icon="@drawable/ic_schedule"
+            android:title="Scheduling" />
         <item
             android:id="@+id/settings"
             android:icon="@drawable/ic_settings"
@@ -28,6 +36,9 @@
             android:id="@+id/about"
             android:icon="@drawable/ic_aboutus"
             android:title="About us" />
+        <item
+            android:id="@+id/logout"
+            android:title="Logout" />
     </group>
 
 
