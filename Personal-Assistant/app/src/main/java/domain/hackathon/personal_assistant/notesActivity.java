@@ -6,6 +6,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -20,6 +24,8 @@ public class notesActivity extends AppCompatActivity {
 
     public static final String EXTRA_CIRCULAR_REVEAL_X = "EXTRA_CIRCULAR_REVEAL_X";
     public static final String EXTRA_CIRCULAR_REVEAL_Y = "EXTRA_CIRCULAR_REVEAL_Y";
+    private recAdapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     View rootLayout;
 
@@ -27,28 +33,13 @@ public class notesActivity extends AppCompatActivity {
     private int revealY;
     List<String> list;
     TextView tlist;
-
+    RecyclerView reclist;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notes);
-
-        tlist = (TextView) findViewById(R.id.list);
-        list = new ArrayList<String>();
-        list.add("This is a list");
-        list.add("This is line 2 of the list");
-        list.add("Shopping list can go here");
-
-        StringBuilder builder = new StringBuilder();
-        for (String details : list) {
-            builder.append(details + "\n");
-        }
-
-        tlist.setText(builder.toString());
-
-
         final Intent intent = getIntent();
 
         rootLayout = findViewById(R.id.root_layout);
@@ -75,6 +66,35 @@ public class notesActivity extends AppCompatActivity {
         } else {
             rootLayout.setVisibility(View.VISIBLE);
         }
+
+        reclist = (RecyclerView) findViewById(R.id.Reclist);
+
+        //tlist = (TextView) findViewById(R.id.list);
+        list = new ArrayList<String>();
+        list.add("This is a list");
+        list.add("This is line 2 of the list");
+        list.add("Shopping list can go here");
+        list.add("Anything else can go here");
+        list.add("Literally anything you want");
+        list.add("Yes, anything");
+
+        mAdapter = new recAdapter(list);
+        mLayoutManager = new LinearLayoutManager(this);
+        reclist.setLayoutManager(mLayoutManager);
+        reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        reclist.setItemAnimator(new DefaultItemAnimator());
+        reclist.setAdapter(mAdapter);
+
+
+        //StringBuilder builder = new StringBuilder();
+        //for (String details : list) {
+        //    builder.append(details + "\n");
+        //}
+
+        //tlist.setText(builder.toString());
+
+
+
     }
 
     protected void revealActivity(int x, int y) {

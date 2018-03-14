@@ -6,7 +6,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:background="#b3dfff"
     tools:openDrawer="start">
+    <!--#b0e9fd-->
+    <!--#b3e6ff-->
+
+    <android.widget.FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fabnote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="16dp"
+            app:layout_anchorGravity="bottom|right|end" />
+
+
+    </android.widget.FrameLayout>
 
     <include
         layout="@layout/app_bar_homescreen_nav"
@@ -26,19 +46,7 @@
     <!--b3d9ff-->
     <!--ccccff-->
 
-    <android.widget.FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/btnnote"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="bottom|right"
-            android:background="@drawable/round_button" />
-
-
-    </android.widget.FrameLayout>
 
 
 </android.support.v4.widget.DrawerLayout>

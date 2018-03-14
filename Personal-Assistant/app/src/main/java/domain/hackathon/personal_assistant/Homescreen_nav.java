@@ -26,7 +26,6 @@ import java.util.List;
 public class Homescreen_nav extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private FirebaseAuth auth;
-    Button notes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +34,10 @@ public class Homescreen_nav extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        notes = (Button) findViewById(R.id.btnnote);
 
-        notes.setOnClickListener(new View.OnClickListener() {
-            @Override
+
+        FloatingActionButton myFab = (FloatingActionButton)  findViewById(R.id.fabnote);
+        myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 presentActivity(v);
             }

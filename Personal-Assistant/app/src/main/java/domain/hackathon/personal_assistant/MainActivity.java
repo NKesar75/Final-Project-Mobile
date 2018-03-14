@@ -25,6 +25,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            // User is signed in (getCurrentUser() will be null if not signed in)
+            startActivity(new Intent(MainActivity.this, Homescreen_nav.class));
+            finish();
+        }
 
 
         final EditText Email = (EditText) findViewById(R.id.txtemail);

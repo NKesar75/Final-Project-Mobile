@@ -9,11 +9,12 @@
     android:fitsSystemWindows="true"
     tools:context="domain.hackathon.personal_assistant.Homescreen_nav">
 
-    <TextView
-        android:id="@+id/list"
-        android:text="It works!"
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/Reclist"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true" />
+        android:layout_height="wrap_content">
+    </android.support.v7.widget.RecyclerView>
 
 </RelativeLayout>
