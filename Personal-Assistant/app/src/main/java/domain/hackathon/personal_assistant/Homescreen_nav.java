@@ -113,6 +113,8 @@ public class Homescreen_nav extends AppCompatActivity
             startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
 
         } else if (id == R.id.youtube) {
+            startActivity(new Intent(Homescreen_nav.this, Youtube.class));
+
 
         } else if (id == R.id.banking) {
 
