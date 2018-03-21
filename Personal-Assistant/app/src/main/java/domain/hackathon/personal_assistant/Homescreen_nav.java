@@ -1,11 +1,22 @@
 package domain.hackathon.personal_assistant;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.AudioTrack;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,14 +29,27 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 
+
+
+
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Homescreen_nav extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private FirebaseAuth auth;
+    private boolean isRecording = false;
+    private static MediaRecorder mediaRecorder;
+    private static MediaPlayer mediaPlayer;
+    private static String audioFilePath;
+    private  boolean recstop = false;
+
+
+    private boolean permissionToRecordAccepted = false;
+    private String [] permissions = {android.Manifest.permission.RECORD_AUDIO};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +57,13 @@ public class Homescreen_nav extends AppCompatActivity
         setContentView(R.layout.activity_homescreen_nav);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.RECORD_AUDIO},
+                    200);
+        }
 
 
 
@@ -40,6 +71,26 @@ public class Homescreen_nav extends AppCompatActivity
         myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 presentActivity(v);
+            }
+        });
+
+        audioFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/records/myaudio.3gp";
+
+        FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
+
+        voice.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (!recstop)
+                {
+                    recordAudio();
+                    recstop = true;
+                }
+                if (recstop)
+                {
+                    recstop = false;
+                    stopAudio(v);
+                    playAudio();
+                }
             }
         });
 
@@ -56,6 +107,8 @@ public class Homescreen_nav extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         auth = FirebaseAuth.getInstance();
+
+
     }
 
     public void presentActivity(View view) {
@@ -115,7 +168,6 @@ public class Homescreen_nav extends AppCompatActivity
         } else if (id == R.id.youtube) {
             startActivity(new Intent(Homescreen_nav.this, Youtube.class));
 
-
         } else if (id == R.id.banking) {
 
         } else if (id == R.id.food) {
@@ -137,6 +189,50 @@ public class Homescreen_nav extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+    void recordAudio() {
+        isRecording = true;
+
+        mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setOutputFile(audioFilePath);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        try {
+            mediaRecorder.prepare();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        mediaRecorder.start();
+
+
+    }
+    public void stopAudio (View view)
+    {
+        if (isRecording)
+        {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+            isRecording = false;
+        } else {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+
+    void playAudio() {
+        mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(audioFilePath);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
 
 
