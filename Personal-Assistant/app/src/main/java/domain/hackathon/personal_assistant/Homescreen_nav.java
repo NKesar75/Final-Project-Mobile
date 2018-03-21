@@ -8,6 +8,7 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -30,10 +31,14 @@ import android.widget.Button;
 import android.widget.TextView;
 
 
-
-
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+
+import java.io.File;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +52,25 @@ public class Homescreen_nav extends AppCompatActivity
     private static String audioFilePath;
     private  boolean recstop = false;
 
+    private StorageReference mStorage;
 
     private boolean permissionToRecordAccepted = false;
     private String [] permissions = {android.Manifest.permission.RECORD_AUDIO};
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull  int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Recognizer initialization is a time-consuming and it involves IO,
+                // so we execute it in async task
+                //new SetupTask(this).execute();
+            } else {
+                //finish();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +83,11 @@ public class Homescreen_nav extends AppCompatActivity
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.RECORD_AUDIO},
-                    200);
+                    1);
         }
 
 
+        mStorage = FirebaseStorage.getInstance().getReference();
 
         FloatingActionButton myFab = (FloatingActionButton)  findViewById(R.id.fabnote);
         myFab.setOnClickListener(new View.OnClickListener() {
@@ -74,24 +96,7 @@ public class Homescreen_nav extends AppCompatActivity
             }
         });
 
-        audioFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/records/myaudio.3gp";
 
-        FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
-
-        voice.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (!recstop)
-                {
-                    recordAudio();
-                    recstop = true;
-                }
-                else if (recstop)
-                {
-                    recstop = false;
-                    playAudio();
-                }
-            }
-        });
 
 
 
@@ -106,6 +111,30 @@ public class Homescreen_nav extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         auth = FirebaseAuth.getInstance();
+        audioFilePath = getExternalCacheDir().getAbsolutePath();
+
+        audioFilePath += "/audiorecordtest.3gp";
+
+        FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
+
+        voice.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (!recstop)
+                {
+                    recordAudio();
+                    recstop = true;
+                }
+                else if (recstop)
+                {
+                    recstop = false;
+                    mediaRecorder.stop();
+                    mediaRecorder.release();
+                    mediaRecorder = null;
+                    playAudio();
+                    uploadAudio();
+                }
+            }
+        });
 
 
     }
@@ -188,7 +217,7 @@ public class Homescreen_nav extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    void recordAudio() {
+    public void recordAudio() {
         isRecording = true;
 
         mediaRecorder = new MediaRecorder();
@@ -203,8 +232,7 @@ public class Homescreen_nav extends AppCompatActivity
         }
         mediaRecorder.start();
 
-        mediaRecorder.stop();
-        mediaRecorder.release();
+
 
     }
     public void stopAudio (View view)
@@ -233,6 +261,18 @@ public class Homescreen_nav extends AppCompatActivity
         }
 
     }
+    private void uploadAudio()
+    {
+        StorageReference filepath = mStorage.child("new_audio.3gp");
+        Uri uri = Uri.fromFile(new File(audioFilePath));
+        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+            }
+        });
+    }
+
 
 }
 
