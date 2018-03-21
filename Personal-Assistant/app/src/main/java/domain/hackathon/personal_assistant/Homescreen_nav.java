@@ -85,10 +85,9 @@ public class Homescreen_nav extends AppCompatActivity
                     recordAudio();
                     recstop = true;
                 }
-                if (recstop)
+                else if (recstop)
                 {
                     recstop = false;
-                    stopAudio(v);
                     playAudio();
                 }
             }
@@ -204,6 +203,8 @@ public class Homescreen_nav extends AppCompatActivity
         }
         mediaRecorder.start();
 
+        mediaRecorder.stop();
+        mediaRecorder.release();
 
     }
     public void stopAudio (View view)
