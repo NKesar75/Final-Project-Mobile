@@ -113,7 +113,7 @@ public class Homescreen_nav extends AppCompatActivity
         auth = FirebaseAuth.getInstance();
         audioFilePath = getExternalCacheDir().getAbsolutePath();
 
-        audioFilePath += "/audiorecordtest.3gp";
+        audioFilePath += "/audiorecordtest.amr";
 
         FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
 
@@ -222,7 +222,7 @@ public class Homescreen_nav extends AppCompatActivity
 
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
         mediaRecorder.setOutputFile(audioFilePath);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
@@ -263,7 +263,7 @@ public class Homescreen_nav extends AppCompatActivity
     }
     private void uploadAudio()
     {
-        StorageReference filepath = mStorage.child("new_audio.3gp");
+        StorageReference filepath = mStorage.child("new_audio.amr");
         Uri uri = Uri.fromFile(new File(audioFilePath));
         filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
