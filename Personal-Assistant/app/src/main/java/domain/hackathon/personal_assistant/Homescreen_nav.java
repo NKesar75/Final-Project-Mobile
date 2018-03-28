@@ -38,6 +38,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 
+
 import java.io.File;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class Homescreen_nav extends AppCompatActivity
     private static MediaPlayer mediaPlayer;
     private static String audioFilePath;
     private  boolean recstop = false;
+
 
     private StorageReference mStorage;
 
@@ -222,9 +224,9 @@ public class Homescreen_nav extends AppCompatActivity
 
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);
         mediaRecorder.setOutputFile(audioFilePath);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
         try {
             mediaRecorder.prepare();
         } catch (Exception e) {
@@ -272,7 +274,5 @@ public class Homescreen_nav extends AppCompatActivity
             }
         });
     }
-
-
 }
 

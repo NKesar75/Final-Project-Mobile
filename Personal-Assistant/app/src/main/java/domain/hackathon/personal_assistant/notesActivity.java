@@ -32,7 +32,6 @@ public class notesActivity extends AppCompatActivity {
     private int revealX;
     private int revealY;
     List<String> list;
-    TextView tlist;
     RecyclerView reclist;
 
 
