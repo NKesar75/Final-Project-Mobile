@@ -1,7 +1,13 @@
 package domain.hackathon.personal_assistant;
 
+import android.*;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -29,6 +35,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
+import android.location.Geocoder;
+import android.widget.Toast;
 
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,11 +46,17 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class Homescreen_nav extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -51,7 +65,23 @@ public class Homescreen_nav extends AppCompatActivity
     private static MediaRecorder mediaRecorder;
     private static MediaPlayer mediaPlayer;
     private static String audioFilePath;
-    private  boolean recstop = false;
+    private boolean recstop = false;
+    private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize";
+    LocationManager locationManager;
+    String city;
+    String state;
+    String Zipcode;
+    Geocoder geocoder;
+    List<Address> addressList;
+    static final int REQUEST_LOCATION = 1;
+    private ProgressDialog pDialog;
+    private String TAG = MainActivity.class.getSimpleName();
+    HashMap<String, String> weatherhash;
+
+
+
+
+
 
 
     private StorageReference mStorage;
@@ -87,6 +117,9 @@ public class Homescreen_nav extends AppCompatActivity
                     new String[]{android.Manifest.permission.RECORD_AUDIO},
                     1);
         }
+        weatherhash = new HashMap<>();
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 
         mStorage = FirebaseStorage.getInstance().getReference();
@@ -118,7 +151,10 @@ public class Homescreen_nav extends AppCompatActivity
         audioFilePath += "/audiorecordtest.amr";
 
         FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
-
+        getLocation();
+        PythonApiUrl = PythonApiUrl + "/" + state + "/" + city;
+        getJsonInfo();
+        updateweatherview();
         voice.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (!recstop)
@@ -132,8 +168,12 @@ public class Homescreen_nav extends AppCompatActivity
                     mediaRecorder.stop();
                     mediaRecorder.release();
                     mediaRecorder = null;
+                    getLocation();
+                    PythonApiUrl = PythonApiUrl + "/" + state + "/" + city;
                     playAudio();
                     uploadAudio();
+                    getJsonInfo();
+                    updateweatherview();
                 }
             }
         });
@@ -224,9 +264,9 @@ public class Homescreen_nav extends AppCompatActivity
 
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
         mediaRecorder.setOutputFile(audioFilePath);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         try {
             mediaRecorder.prepare();
         } catch (Exception e) {
@@ -273,6 +313,308 @@ public class Homescreen_nav extends AppCompatActivity
 
             }
         });
+    }
+    private void updateweatherview() {
+        Toast.makeText(getApplicationContext(),
+                "info " + weatherhash.get("weather"),
+                Toast.LENGTH_LONG)
+                .show();
+    }
+    private void getJsonInfo(){
+        Jsonparserweather hand = new Jsonparserweather();
+
+        // Making a request to url and getting response
+        String jsonStr = hand.makeServiceCall(PythonApiUrl);
+
+        Log.e(TAG, "Response from url: " + jsonStr);
+
+        if (jsonStr != null) {
+            try {
+                JSONObject jsonObj = new JSONObject(jsonStr);
+
+                // Getting JSON Array node
+                JSONArray weatherarray = jsonObj.getJSONArray("current_observation");
+
+                for (int i = 0; i < weatherarray.length(); i++) {
+                    JSONObject c = weatherarray.getJSONObject(i);
+
+                    String weather = c.getString("weather");
+                    String tempf = c.getString("temp_f");
+                    String tempc = c.getString("temp_c");
+                    String wind = c.getString("wind_string");
+                    String wind_mph = c.getString("wind_mph");
+
+                    // adding each child node to HashMap key => value
+                    weatherhash.put("weather", weather);
+                    weatherhash.put("tempf", tempf);
+                    weatherhash.put("tempc", tempc);
+                    weatherhash.put("wind", wind);
+                    weatherhash.put("wind_mph", wind_mph);
+
+                }
+            } catch (final JSONException e) {
+                Log.e(TAG, "Json parsing error: " + e.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Json parsing error: " + e.getMessage(),
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+
+            }
+        } else {
+            Log.e(TAG, "Couldn't get json from server.");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            "Couldn't get json from server. Check LogCat for possible errors!",
+                            Toast.LENGTH_LONG)
+                            .show();
+                }
+            });
+
+        }
+    }
+
+    void getLocation() {
+        Double lon;
+        Double lat;
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            if (location != null) {
+                lat = location.getLatitude();
+                lon = location.getLongitude();
+
+                geocoder = new Geocoder(this, Locale.getDefault());
+                try {
+                    addressList = geocoder.getFromLocation(lat, lon, 1);
+                    city = addressList.get(0).getLocality();
+                    Zipcode = addressList.get(0).getPostalCode();
+                    String x = addressList.get(0).getAdminArea();
+                    switch (x) {
+                        case "Alabama":
+                            x = "AL";
+                            break;
+
+                        case "Alaska":
+                            x = "AK";
+                            break;
+
+                        case "Arizona":
+                            x = "AZ";
+                            break;
+
+                        case "Arkansas":
+                            x = "AR";
+                            break;
+
+                        case "California":
+                            x = "CA";
+                            break;
+
+                        case "Colorado":
+                            x = "CO";
+                            break;
+
+                        case "Connecticut":
+                            x = "CT";
+                            break;
+
+                        case "Delaware":
+                            x = "DE";
+                            break;
+
+                        case "District of Columbia":
+                            x = "DC";
+                            break;
+
+                        case "Florida":
+                            x = "FL";
+                            break;
+
+                        case "Georgia":
+                            x = "GA";
+                            break;
+
+                        case "Hawaii":
+                            x = "HI";
+                            break;
+
+                        case "Idaho":
+                            x = "ID";
+                            break;
+
+                        case "Illinois":
+                            x = "IL";
+                            break;
+
+                        case "Indiana":
+                            x = "IN";
+                            break;
+
+                        case "Iowa":
+                            x = "IA";
+                            break;
+
+                        case "Kansas":
+                            x = "KS";
+                            break;
+
+                        case "Kentucky":
+                            x = "KY";
+                            break;
+
+                        case "Louisiana":
+                            x = "LA";
+                            break;
+
+                        case "Maine":
+                            x = "ME";
+                            break;
+
+                        case "Maryland":
+                            x = "MD";
+                            break;
+
+                        case "Massachusetts":
+                            x = "MA";
+                            break;
+
+                        case "Michigan":
+                            x = "MI";
+                            break;
+
+                        case "Minnesota":
+                            x = "MN";
+                            break;
+
+                        case "Mississippi":
+                            x = "MS";
+                            break;
+
+                        case "Missouri":
+                            x = "MO";
+                            break;
+
+                        case "Montana":
+                            x = "MT";
+                            break;
+
+                        case "Nebraska":
+                            x = "NE";
+                            break;
+
+                        case "Nevada":
+                            x = "NV";
+                            break;
+
+                        case "New Hampshire":
+                            x = "NH";
+                            break;
+
+                        case "New Jersey":
+                            x = "NJ";
+                            break;
+
+                        case "New Mexico":
+                            x = "NM";
+                            break;
+
+                        case "New York":
+                            x = "NY";
+                            break;
+
+                        case "North Carolina":
+                            x = "NC";
+                            break;
+
+                        case "North Dakota":
+                            x = "ND";
+                            break;
+
+                        case "Ohio":
+                            x = "OH";
+                            break;
+
+                        case "Oklahoma":
+                            x = "OK";
+                            break;
+
+                        case "Oregon":
+                            x = "OR";
+                            break;
+
+                        case "Pennsylvania":
+                            x = "PA";
+                            break;
+
+
+                        case "Rhode Island":
+                            x = "RI";
+                            break;
+
+                        case "South Carolina":
+                            x = "SC";
+                            break;
+
+                        case "South Dakota":
+                            x = "SD";
+                            break;
+
+                        case "Tennessee":
+                            x = "TN";
+                            break;
+
+                        case "Texas":
+                            x = "TX";
+                            break;
+
+                        case "Utah":
+                            x = "UT";
+                            break;
+
+                        case "Vermont":
+                            x = "VT";
+                            break;
+
+                        case "Virginia":
+                            x = "VA";
+                            break;
+
+                        case "Washington":
+                            x = "WA";
+                            break;
+
+                        case "West Virginia":
+                            x = "WV";
+                            break;
+
+                        case "Wisconsin":
+                            x = "WI";
+                            break;
+
+                        case "Wyoming":
+                            x = "WY";
+                            break;
+
+                        default:
+                            break;
+                    }
+                    state = x;
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
 
