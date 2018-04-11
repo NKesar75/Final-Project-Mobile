@@ -27,10 +27,23 @@ public class Jsonparserweather {
         try {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(10000);
             conn.setRequestMethod("GET");
+            conn.setUseCaches(false);
+            conn.setAllowUserInteraction(false);
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             // read the response
-            InputStream in = new BufferedInputStream(conn.getInputStream());
-            response = convertStreamToString(in);
+            //InputStream in = new BufferedInputStream(conn.getInputStream());
+            //response = convertStreamToString(in);
+            String line;
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            while ((line = br.readLine()) != null)
+            {
+                response = "";// String variable declared global
+                response += line;
+                Log.i("response_line", response);
+            }
         } catch (MalformedURLException e) {
             Log.e(TAG, "MalformedURLException: " + e.getMessage());
         } catch (ProtocolException e) {

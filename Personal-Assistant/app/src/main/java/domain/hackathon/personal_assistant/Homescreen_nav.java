@@ -151,10 +151,12 @@ public class Homescreen_nav extends AppCompatActivity
         audioFilePath += "/audiorecordtest.amr";
 
         FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
+        //testing purposes
         getLocation();
         PythonApiUrl = PythonApiUrl + "/" + state + "/" + city;
         getJsonInfo();
         updateweatherview();
+
         voice.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (!recstop)
