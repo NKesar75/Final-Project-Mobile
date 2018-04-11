@@ -318,7 +318,7 @@ public class Homescreen_nav extends AppCompatActivity
     }
     private void updateweatherview() {
         Toast.makeText(getApplicationContext(),
-                "info " + weatherhash.get("weather"),
+                "info " + weatherhash.get("key"),
                 Toast.LENGTH_LONG)
                 .show();
     }
@@ -337,26 +337,37 @@ public class Homescreen_nav extends AppCompatActivity
             try {
                 JSONObject jsonObj = new JSONObject(jsonStr);
 
+                String key = jsonObj.getString("key");
+                String tempf = jsonObj.getString("tempf");
+                String tempc = jsonObj.getString("tempc");
+                String city = jsonObj.getString("city");
+                String state = jsonObj.getString("state");
+                weatherhash.put("key", key);
+                weatherhash.put("tempf", tempf);
+                weatherhash.put("tempc", tempc);
+                weatherhash.put("city", city);
+                weatherhash.put("state", state);
+
                 // Getting JSON Array node
-                JSONArray weatherarray = jsonObj.getJSONArray("current_observation");
+                //JSONArray weatherarray = jsonObj.getJSONArray("current_observation");
 
-                for (int i = 0; i < weatherarray.length(); i++) {
-                    JSONObject c = weatherarray.getJSONObject(i);
-
-                    String weather = c.getString("weather");
-                    String tempf = c.getString("temp_f");
-                    String tempc = c.getString("temp_c");
-                    String wind = c.getString("wind_string");
-                    String wind_mph = c.getString("wind_mph");
-
-                    // adding each child node to HashMap key => value
-                    weatherhash.put("weather", weather);
-                    weatherhash.put("tempf", tempf);
-                    weatherhash.put("tempc", tempc);
-                    weatherhash.put("wind", wind);
-                    weatherhash.put("wind_mph", wind_mph);
-
-                }
+                //for (int i = 0; i < weatherarray.length(); i++) {
+                //    JSONObject c = weatherarray.getJSONObject(i);
+//
+                //    String weather = c.getString("weather");
+                //    String tempf = c.getString("temp_f");
+                //    String tempc = c.getString("temp_c");
+                //    String wind = c.getString("wind_string");
+                //    String wind_mph = c.getString("wind_mph");
+//
+                //    // adding each child node to HashMap key => value
+                //    weatherhash.put("weather", weather);
+                //    weatherhash.put("tempf", tempf);
+                //    weatherhash.put("tempc", tempc);
+                //    weatherhash.put("wind", wind);
+                //    weatherhash.put("wind_mph", wind_mph);
+//
+                //}
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
                 runOnUiThread(new Runnable() {
