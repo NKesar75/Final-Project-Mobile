@@ -326,7 +326,10 @@ public class Homescreen_nav extends AppCompatActivity
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
-        String jsonStr = hand.makeServiceCall(PythonApiUrl);
+        hand.makeServiceCall(PythonApiUrl);
+        while (Jsonparserweather.isdoneconn != true);
+
+        String jsonStr = Jsonparserweather.response;
 
         Log.e(TAG, "Response from url: " + jsonStr);
 
@@ -399,6 +402,10 @@ public class Homescreen_nav extends AppCompatActivity
                 try {
                     addressList = geocoder.getFromLocation(lat, lon, 1);
                     city = addressList.get(0).getLocality();
+                    if (city.contains(" "))
+                    {
+                        city = city.replace(" ", "_");
+                    }
                     Zipcode = addressList.get(0).getPostalCode();
                     String x = addressList.get(0).getAdminArea();
                     switch (x) {
