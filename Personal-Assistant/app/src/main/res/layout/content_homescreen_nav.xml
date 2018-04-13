@@ -8,4 +8,43 @@
     tools:context="domain.hackathon.personal_assistant.Homescreen_nav"
     tools:showIn="@layout/app_bar_homescreen_nav">
 
+    <ImageView
+        android:id="@+id/weather"
+        android:layout_width="match_parent"
+        android:layout_height="87dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        app:srcCompat="@mipmap/ic_logo" />
+
+    <TextView
+        android:id="@+id/temp"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:text="temp"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.684"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weather" />
+
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:text="location"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/temp" />
+
 </android.support.constraint.ConstraintLayout>

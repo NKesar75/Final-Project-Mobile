@@ -34,6 +34,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.location.Geocoder;
 import android.widget.Toast;
@@ -67,6 +68,7 @@ public class Homescreen_nav extends AppCompatActivity
     private static String audioFilePath;
     private boolean recstop = false;
     private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize";
+
     LocationManager locationManager;
     String city;
     String state;
@@ -77,14 +79,9 @@ public class Homescreen_nav extends AppCompatActivity
     private ProgressDialog pDialog;
     private String TAG = MainActivity.class.getSimpleName();
     HashMap<String, String> weatherhash;
-
-
-
-
-
-
-
     private StorageReference mStorage;
+    TextView temp, loca;
+    ImageView iweather;
 
     private boolean permissionToRecordAccepted = false;
     private String [] permissions = {android.Manifest.permission.RECORD_AUDIO};
@@ -123,6 +120,13 @@ public class Homescreen_nav extends AppCompatActivity
 
 
         mStorage = FirebaseStorage.getInstance().getReference();
+
+        temp = (TextView) findViewById(R.id.temp);
+        loca = (TextView) findViewById(R.id.location);
+        iweather = (ImageView) findViewById(R.id.weather);
+        temp.setVisibility(View.INVISIBLE);
+        loca.setVisibility(View.INVISIBLE);
+        iweather.setVisibility(View.INVISIBLE);
 
         FloatingActionButton myFab = (FloatingActionButton)  findViewById(R.id.fabnote);
         myFab.setOnClickListener(new View.OnClickListener() {
@@ -317,10 +321,11 @@ public class Homescreen_nav extends AppCompatActivity
         });
     }
     private void updateweatherview() {
-        Toast.makeText(getApplicationContext(),
-                "info " + weatherhash.get("key"),
-                Toast.LENGTH_LONG)
-                .show();
+        temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
+        loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
+        temp.setVisibility(View.VISIBLE);
+        loca.setVisibility(View.VISIBLE);
+        iweather.setVisibility(View.VISIBLE);
     }
     private void getJsonInfo(){
         Jsonparserweather hand = new Jsonparserweather();
@@ -353,20 +358,20 @@ public class Homescreen_nav extends AppCompatActivity
 
                 //for (int i = 0; i < weatherarray.length(); i++) {
                 //    JSONObject c = weatherarray.getJSONObject(i);
-//
+
                 //    String weather = c.getString("weather");
                 //    String tempf = c.getString("temp_f");
                 //    String tempc = c.getString("temp_c");
                 //    String wind = c.getString("wind_string");
                 //    String wind_mph = c.getString("wind_mph");
-//
+
                 //    // adding each child node to HashMap key => value
                 //    weatherhash.put("weather", weather);
                 //    weatherhash.put("tempf", tempf);
                 //    weatherhash.put("tempc", tempc);
                 //    weatherhash.put("wind", wind);
                 //    weatherhash.put("wind_mph", wind_mph);
-//
+
                 //}
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());

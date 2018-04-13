@@ -21,6 +21,8 @@ public class Jsonparserweather {
     private static final String TAG = Jsonparserweather.class.getSimpleName();
     public static String response;
     public static boolean isdoneconn = false;
+    private String test = "https://personalassistant-ec554.appspot.com/recognize/fl/orlando";
+
 
     public Jsonparserweather() {
     }
@@ -32,27 +34,14 @@ public class Jsonparserweather {
                 try {
                     URL url = new URL(reqUrl);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    //InputStream conn =  url.openStream();
-
                     conn.setReadTimeout(10000);
                     conn.setConnectTimeout(15000);
                     conn.setRequestMethod("GET");
                     conn.setDoInput(true);
                     conn.connect();
-                    //conn.setUseCaches(false);
-                    //conn.setAllowUserInteraction(false);
-                    //conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                     // read the response
                     InputStream in = conn.getInputStream();
                     response = convertStreamToString(in);
-                    //String line;
-                    //BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    //while ((line = br.readLine()) != null)
-                    //{
-                    //    response = "";
-                    //    response += line;
-                    //    Log.i("response_line", response);
-                    //}
                 } catch (Exception e) {
                     Log.e(TAG, "Exception: " + e.getMessage());
                 }
