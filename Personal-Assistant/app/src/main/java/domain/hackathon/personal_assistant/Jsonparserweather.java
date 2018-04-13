@@ -32,7 +32,7 @@ public class Jsonparserweather {
             @Override
             public void run() {
                 try {
-                    URL url = new URL(reqUrl);
+                    URL url = new URL(test);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(10000);
                     conn.setConnectTimeout(15000);

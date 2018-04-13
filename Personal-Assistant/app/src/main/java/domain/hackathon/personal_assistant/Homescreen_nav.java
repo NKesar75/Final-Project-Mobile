@@ -50,9 +50,12 @@ import com.google.firebase.storage.UploadTask;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +83,7 @@ public class Homescreen_nav extends AppCompatActivity
     private String TAG = MainActivity.class.getSimpleName();
     HashMap<String, String> weatherhash;
     private StorageReference mStorage;
-    TextView temp, loca;
+    TextView temp, loca, condition, precip, humidity;
     ImageView iweather;
 
     private boolean permissionToRecordAccepted = false;
@@ -123,8 +126,15 @@ public class Homescreen_nav extends AppCompatActivity
 
         temp = (TextView) findViewById(R.id.temp);
         loca = (TextView) findViewById(R.id.location);
+        condition = (TextView) findViewById(R.id.condition);
+        precip = (TextView) findViewById(R.id.precip);
+        humidity = (TextView) findViewById(R.id.humdity);
+
         iweather = (ImageView) findViewById(R.id.weather);
         temp.setVisibility(View.INVISIBLE);
+        condition.setVisibility(View.INVISIBLE);
+        precip.setVisibility(View.INVISIBLE);
+        humidity.setVisibility(View.INVISIBLE);
         loca.setVisibility(View.INVISIBLE);
         iweather.setVisibility(View.INVISIBLE);
 
@@ -323,9 +333,18 @@ public class Homescreen_nav extends AppCompatActivity
     private void updateweatherview() {
         temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
         loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
+        condition.setText(weatherhash.get("condition"));
+        precip.setText("Precipitation: "+ weatherhash.get("precip"));
+        humidity.setText("Humidity: " +weatherhash.get("humidity"));
+        //Uri uri = Uri.parse(weatherhash.get("picurl"));
+        //iweather.setImageURI(uri);
+        Glide.with(Homescreen_nav.this).load(weatherhash.get("picurl")).into(iweather);
         temp.setVisibility(View.VISIBLE);
         loca.setVisibility(View.VISIBLE);
         iweather.setVisibility(View.VISIBLE);
+        condition.setVisibility(View.VISIBLE);
+        precip.setVisibility(View.VISIBLE);
+        humidity.setVisibility(View.VISIBLE);
     }
     private void getJsonInfo(){
         Jsonparserweather hand = new Jsonparserweather();
@@ -347,11 +366,19 @@ public class Homescreen_nav extends AppCompatActivity
                 String tempc = jsonObj.getString("tempc");
                 String city = jsonObj.getString("city");
                 String state = jsonObj.getString("state");
+                String humidity = jsonObj.getString("humidity");
+                String precip = jsonObj.getString("precip");
+                String condition = jsonObj.getString("condition");
+                String picurl = jsonObj.getString("url");
                 weatherhash.put("key", key);
                 weatherhash.put("tempf", tempf);
                 weatherhash.put("tempc", tempc);
                 weatherhash.put("city", city);
                 weatherhash.put("state", state);
+                weatherhash.put("humidity", humidity);
+                weatherhash.put("precip", precip);
+                weatherhash.put("condition", condition);
+                weatherhash.put("picurl", picurl);
 
                 // Getting JSON Array node
                 //JSONArray weatherarray = jsonObj.getJSONArray("current_observation");
