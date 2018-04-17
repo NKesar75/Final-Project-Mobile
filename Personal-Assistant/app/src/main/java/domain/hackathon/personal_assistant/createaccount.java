@@ -14,9 +14,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class createaccount extends AppCompatActivity {
     private FirebaseAuth auth;
+    private DatabaseReference myRef;
+    private FirebaseDatabase mFirebaseDatabase;
+
 
 
     @Override
@@ -25,10 +31,22 @@ public class createaccount extends AppCompatActivity {
         setContentView(R.layout.activity_createaccount);
 
         auth = FirebaseAuth.getInstance();
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        myRef = mFirebaseDatabase.getReference();
+
 
         Button signup = (Button) findViewById(R.id.btncreate);
         final EditText Email = (EditText) findViewById(R.id.txtcreateemail);
         final EditText Password = (EditText) findViewById(R.id.txtcreatepassword);
+        final EditText firstname = (EditText) findViewById(R.id.txtcfirstname);
+        final EditText lastname = (EditText) findViewById(R.id.txtclastname);
+        final EditText month = (EditText) findViewById(R.id.txtcmonth);
+        final EditText day = (EditText) findViewById(R.id.txtcday);
+        final EditText year = (EditText) findViewById(R.id.txtcyear);
+
+
+
+
 
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,6 +68,32 @@ public class createaccount extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                if (TextUtils.isEmpty(firstname.getText().toString()))
+                {
+                    Toast.makeText(getApplicationContext(), "Please enter your first name.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (TextUtils.isEmpty(lastname.getText().toString()))
+                {
+                    Toast.makeText(getApplicationContext(), "Please enter your last name.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (month.getText().toString().length() < 2)
+                {
+                    Toast.makeText(getApplicationContext(), "The month needs to be two characters. ex: 01", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (day.getText().toString().length() < 2)
+                {
+                    Toast.makeText(getApplicationContext(), "The day must be two characters. ex: 02", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (year.getText().toString().length() < 4)
+                {
+                    Toast.makeText(getApplicationContext(), "Year needs to be the full year! ex: 1942", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
 
                 auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(createaccount.this, new OnCompleteListener<AuthResult>() {
@@ -62,6 +106,15 @@ public class createaccount extends AppCompatActivity {
                                     Toast.makeText(createaccount.this, "Create Account failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
+                                    FirebaseUser user = auth.getCurrentUser();
+                                    if (user != null)
+                                    {
+                                        String DOB = month.getText().toString() + "/" + day.getText().toString() + "/" + year.getText().toString();
+                                        myRef.child("users").child(user.getUid()).child("profile").child("dob").setValue(DOB);
+                                        myRef.child("users").child(user.getUid()).child("profile").child("last_name").setValue(lastname.getText().toString());
+                                        myRef.child("users").child(user.getUid()).child("profile").child("name").setValue(firstname.getText().toString());
+
+                                    }
                                     startActivity(new Intent(createaccount.this, Homescreen_nav.class));
                                     finish();
                                 }

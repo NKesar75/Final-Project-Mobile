@@ -21,7 +21,7 @@ public class Jsonparserweather {
     private static final String TAG = Jsonparserweather.class.getSimpleName();
     public static String response;
     public static boolean isdoneconn = false;
-    private String test = "https://personalassistant-ec554.appspot.com/recognize/fl/orlando";
+    private String test = "https://personalassistant-ec554.appspot.com/recognize/voice/FL/Orlando";
 
 
     public Jsonparserweather() {
@@ -32,7 +32,8 @@ public class Jsonparserweather {
             @Override
             public void run() {
                 try {
-                    URL url = new URL(test);
+
+                    URL url = new URL(reqUrl);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(10000);
                     conn.setConnectTimeout(15000);

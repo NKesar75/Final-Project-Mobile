@@ -70,7 +70,8 @@ public class Homescreen_nav extends AppCompatActivity
     private static MediaPlayer mediaPlayer;
     private static String audioFilePath;
     private boolean recstop = false;
-    private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize";
+    private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize/voice";
+    boolean doneupload = false;
 
     LocationManager locationManager;
     String city;
@@ -79,12 +80,12 @@ public class Homescreen_nav extends AppCompatActivity
     Geocoder geocoder;
     List<Address> addressList;
     static final int REQUEST_LOCATION = 1;
-    private ProgressDialog pDialog;
     private String TAG = MainActivity.class.getSimpleName();
     HashMap<String, String> weatherhash;
     private StorageReference mStorage;
     TextView temp, loca, condition, precip, humidity;
     ImageView iweather;
+
 
     private boolean permissionToRecordAccepted = false;
     private String [] permissions = {android.Manifest.permission.RECORD_AUDIO};
@@ -124,6 +125,7 @@ public class Homescreen_nav extends AppCompatActivity
 
         mStorage = FirebaseStorage.getInstance().getReference();
 
+
         temp = (TextView) findViewById(R.id.temp);
         loca = (TextView) findViewById(R.id.location);
         condition = (TextView) findViewById(R.id.condition);
@@ -144,6 +146,7 @@ public class Homescreen_nav extends AppCompatActivity
                 presentActivity(v);
             }
         });
+        doneupload = true;
 
 
 
@@ -168,6 +171,7 @@ public class Homescreen_nav extends AppCompatActivity
         //testing purposes
         getLocation();
         PythonApiUrl = PythonApiUrl + "/" + state + "/" + city;
+
         getJsonInfo();
         updateweatherview();
 
@@ -180,6 +184,7 @@ public class Homescreen_nav extends AppCompatActivity
                 }
                 else if (recstop)
                 {
+                    doneupload= false;
                     recstop = false;
                     mediaRecorder.stop();
                     mediaRecorder.release();
@@ -268,6 +273,7 @@ public class Homescreen_nav extends AppCompatActivity
 
         } else if (id == R.id.logout){
             auth.signOut();
+            finish();
             startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
         }
 
@@ -321,23 +327,60 @@ public class Homescreen_nav extends AppCompatActivity
     }
     private void uploadAudio()
     {
-        StorageReference filepath = mStorage.child("new_audio.amr");
-        Uri uri = Uri.fromFile(new File(audioFilePath));
-        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        final ProgressDialog progressDialog = new ProgressDialog(Homescreen_nav.this);
+        progressDialog.setMax(100);
+        progressDialog.setMessage("Please Wait.....");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.show();
 
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                int progress = 0;
+                while (progress <= 100)
+                {
+                    try
+                    {
+                        progressDialog.setProgress(progress);
+                        progress++;
+                        Thread.sleep(100);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+                progressDialog.dismiss();
+
+                Homescreen_nav.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        StorageReference filepath = mStorage.child("new_audio.amr");
+                        Uri uri = Uri.fromFile(new File(audioFilePath));
+                        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                doneupload = true;
+
+                            }
+
+                        });
+                    }
+                });
             }
         });
+        t.start();
+        progressDialog.show();
+
+
+
     }
     private void updateweatherview() {
         temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
         loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
         condition.setText(weatherhash.get("condition"));
-        precip.setText("Precipitation: "+ weatherhash.get("precip"));
+        precip.setText("Precipitation: "+ weatherhash.get("precip") + "%");
         humidity.setText("Humidity: " +weatherhash.get("humidity"));
-        //Uri uri = Uri.parse(weatherhash.get("picurl"));
-        //iweather.setImageURI(uri);
         Glide.with(Homescreen_nav.this).load(weatherhash.get("picurl")).into(iweather);
         temp.setVisibility(View.VISIBLE);
         loca.setVisibility(View.VISIBLE);
@@ -350,8 +393,11 @@ public class Homescreen_nav extends AppCompatActivity
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
+        while (!doneupload);
         hand.makeServiceCall(PythonApiUrl);
         while (Jsonparserweather.isdoneconn != true);
+
+
 
         String jsonStr = Jsonparserweather.response;
 
@@ -370,6 +416,7 @@ public class Homescreen_nav extends AppCompatActivity
                 String precip = jsonObj.getString("precip");
                 String condition = jsonObj.getString("condition");
                 String picurl = jsonObj.getString("url");
+                weatherhash.clear();
                 weatherhash.put("key", key);
                 weatherhash.put("tempf", tempf);
                 weatherhash.put("tempc", tempc);

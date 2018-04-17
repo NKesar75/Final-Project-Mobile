@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,15 +10,11 @@
         android:id="@+id/txtcreatepassword"
         android:layout_width="291dp"
         android:layout_height="43dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="92dp"
+        android:layout_alignStart="@+id/txtcreateemail"
+        android:layout_below="@+id/txtcreateemail"
         android:ems="10"
         android:hint="Password"
-        android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:inputType="textPassword" />
 
     <EditText
         android:id="@+id/txtcreateemail"
@@ -27,25 +23,93 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="44dp"
+        android:layout_centerHorizontal="true"
         android:ems="10"
         android:hint="Email"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/txtcfirstname"
+        android:layout_width="151dp"
+        android:layout_height="43dp"
+        android:layout_alignStart="@+id/txtcreatepassword"
+        android:layout_below="@+id/txtcreatepassword"
+        android:ems="10"
+        android:hint="Firstname"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.18"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/txtclastname"
+        android:layout_width="151dp"
+        android:layout_height="43dp"
+        android:layout_alignBaseline="@+id/txtcfirstname"
+        android:layout_alignBottom="@+id/txtcfirstname"
+        android:layout_alignEnd="@+id/txtcreatepassword"
+        android:ems="10"
+        android:hint="Lastname"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/txtcmonth"
+        android:layout_width="54dp"
+        android:layout_height="43dp"
+        android:layout_below="@+id/txtcfirstname"
+        android:layout_toEndOf="@+id/editText"
+        android:ems="10"
+        android:hint="MM"
+        android:inputType="date" />
+
+    <EditText
+        android:id="@+id/txtcyear"
+        android:layout_width="98dp"
+        android:layout_height="43dp"
+        android:layout_alignBaseline="@+id/editText"
+        android:layout_alignBottom="@+id/editText"
+        android:layout_alignEnd="@+id/txtcreatepassword"
+        android:ems="10"
+        android:hint="YYYY"
+        android:inputType="date" />
+
+    <EditText
+        android:id="@+id/txtcday"
+        android:layout_width="54dp"
+        android:layout_height="43dp"
+        android:layout_alignBaseline="@+id/txtcmonth"
+        android:layout_alignBottom="@+id/txtcmonth"
+        android:layout_alignStart="@+id/txtclastname"
+        android:layout_marginStart="8dp"
+        android:ems="10"
+        android:hint="DD"
+        android:inputType="date"
+/>
 
     <Button
         android:id="@+id/btncreate"
         android:layout_width="146dp"
         android:layout_height="58dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="88dp"
+        android:layout_alignStart="@+id/editText"
+        android:layout_below="@+id/txtcmonth"
+        android:layout_marginStart="71dp"
+        android:layout_marginTop="71dp"
         android:background="@color/Button_color"
-        android:textColor="@color/Text_color"
         android:text="Create Account"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtcreatepassword" />
-</android.support.constraint.ConstraintLayout>
+        android:textColor="@color/Text_color" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="105dp"
+        android:layout_height="43dp"
+        android:layout_alignBaseline="@+id/txtcmonth"
+        android:layout_alignBottom="@+id/txtcmonth"
+        android:layout_alignStart="@+id/txtcfirstname"
+        android:ems="10"
+        android:enabled="false"
+        android:inputType="textPersonName"
+        android:text="Date of birth"
+        tools:layout_editor_absoluteX="48dp"
+        tools:layout_editor_absoluteY="172dp" />
+</RelativeLayout>
