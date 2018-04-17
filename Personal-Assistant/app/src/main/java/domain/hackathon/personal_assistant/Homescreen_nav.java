@@ -1,6 +1,7 @@
 package domain.hackathon.personal_assistant;
 
 import android.*;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -146,7 +147,6 @@ public class Homescreen_nav extends AppCompatActivity
                 presentActivity(v);
             }
         });
-        doneupload = true;
 
 
 
@@ -184,6 +184,7 @@ public class Homescreen_nav extends AppCompatActivity
                 }
                 else if (recstop)
                 {
+                    PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize/voice";
                     doneupload= false;
                     recstop = false;
                     mediaRecorder.stop();
@@ -327,54 +328,24 @@ public class Homescreen_nav extends AppCompatActivity
     }
     private void uploadAudio()
     {
-        final ProgressDialog progressDialog = new ProgressDialog(Homescreen_nav.this);
-        progressDialog.setMax(100);
-        progressDialog.setMessage("Please Wait.....");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
+        StorageReference filepath = mStorage.child("new_audio.amr");
+        Uri uri = Uri.fromFile(new File(audioFilePath));
+            filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run()
-            {
-                int progress = 0;
-                while (progress <= 100)
-                {
-                    try
-                    {
-                        progressDialog.setProgress(progress);
-                        progress++;
-                        Thread.sleep(100);
-                    }
-                    catch (Exception e)
-                    {
-                    }
                 }
-                progressDialog.dismiss();
 
-                Homescreen_nav.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        StorageReference filepath = mStorage.child("new_audio.amr");
-                        Uri uri = Uri.fromFile(new File(audioFilePath));
-                        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                doneupload = true;
+            });
+           try{
 
-                            }
-
-                        });
-                    }
-                });
-            }
-        });
-        t.start();
-        progressDialog.show();
-
-
+               Thread.sleep(10000);
+           }
+           catch(Exception C){
 
     }
+        }
+
     private void updateweatherview() {
         temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
         loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
@@ -393,7 +364,6 @@ public class Homescreen_nav extends AppCompatActivity
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
-        while (!doneupload);
         hand.makeServiceCall(PythonApiUrl);
         while (Jsonparserweather.isdoneconn != true);
 
