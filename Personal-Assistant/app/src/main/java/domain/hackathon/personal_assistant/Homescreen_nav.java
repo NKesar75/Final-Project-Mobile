@@ -51,6 +51,7 @@ import com.google.firebase.storage.UploadTask;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.bumptech.glide.Glide;
 
 import java.io.File;
@@ -72,6 +73,9 @@ public class Homescreen_nav extends AppCompatActivity
     private static String audioFilePath;
     private boolean recstop = false;
     private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize/voice";
+    private String PythonApiUrlText = "https://personalassistant-ec554.appspot.com/recognize/text";
+    private String finishedstring = "";
+
     boolean doneupload = false;
 
     LocationManager locationManager;
@@ -86,13 +90,15 @@ public class Homescreen_nav extends AppCompatActivity
     private StorageReference mStorage;
     TextView temp, loca, condition, precip, humidity;
     ImageView iweather;
+    public ProgressDialog progress;
 
 
     private boolean permissionToRecordAccepted = false;
-    private String [] permissions = {android.Manifest.permission.RECORD_AUDIO};
+    private String[] permissions = {android.Manifest.permission.RECORD_AUDIO};
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull  int[] grantResults) {
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == 1) {
@@ -141,18 +147,13 @@ public class Homescreen_nav extends AppCompatActivity
         loca.setVisibility(View.INVISIBLE);
         iweather.setVisibility(View.INVISIBLE);
 
-        FloatingActionButton myFab = (FloatingActionButton)  findViewById(R.id.fabnote);
+
+        FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fabnote);
         myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 presentActivity(v);
             }
         });
-
-
-
-
-
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -167,32 +168,28 @@ public class Homescreen_nav extends AppCompatActivity
 
         audioFilePath += "/audiorecordtest.amr";
 
-        FloatingActionButton voice = (FloatingActionButton)  findViewById(R.id.fabvoice);
-        //testing purposes
+        FloatingActionButton voice = (FloatingActionButton) findViewById(R.id.fabvoice);
         getLocation();
-        PythonApiUrl = PythonApiUrl + "/" + state + "/" + city;
+        finishedstring = PythonApiUrlText + "/" + state + "/" + city;
 
         getJsonInfo();
         updateweatherview();
 
         voice.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (!recstop)
-                {
+                if (!recstop) {
                     recordAudio();
                     recstop = true;
-                }
-                else if (recstop)
-                {
-                    PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize/voice";
-                    doneupload= false;
+                } else if (recstop) {
+                    finishedstring = "";
+                    doneupload = false;
                     recstop = false;
                     mediaRecorder.stop();
                     mediaRecorder.release();
                     mediaRecorder = null;
                     getLocation();
-                    PythonApiUrl = PythonApiUrl + "/" + state + "/" + city;
-                    playAudio();
+                    finishedstring = PythonApiUrl + "/" + state + "/" + city;
+                    //playAudio();
                     uploadAudio();
                     getJsonInfo();
                     updateweatherview();
@@ -272,7 +269,7 @@ public class Homescreen_nav extends AppCompatActivity
 
         } else if (id == R.id.about) {
 
-        } else if (id == R.id.logout){
+        } else if (id == R.id.logout) {
             auth.signOut();
             finish();
             startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
@@ -282,6 +279,7 @@ public class Homescreen_nav extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
     public void recordAudio() {
         isRecording = true;
 
@@ -296,14 +294,10 @@ public class Homescreen_nav extends AppCompatActivity
             e.printStackTrace();
         }
         mediaRecorder.start();
-
-
-
     }
-    public void stopAudio (View view)
-    {
-        if (isRecording)
-        {
+
+    public void stopAudio(View view) {
+        if (isRecording) {
             mediaRecorder.stop();
             mediaRecorder.release();
             mediaRecorder = null;
@@ -324,34 +318,34 @@ public class Homescreen_nav extends AppCompatActivity
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-    private void uploadAudio()
-    {
+
+    private void uploadAudio() {
+        progress = new ProgressDialog(this);
+        progress.setMessage("Please wait");
+        progress.show();
         StorageReference filepath = mStorage.child("new_audio.amr");
         Uri uri = Uri.fromFile(new File(audioFilePath));
-            filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                }
-
-            });
-           try{
-
-               Thread.sleep(10000);
-           }
-           catch(Exception C){
-
-    }
+            }
+        });
+        try {
+            Thread.sleep(10000);
+        } catch (Exception C) {
+            C.printStackTrace();
         }
+        progress.dismiss();
+    }
 
     private void updateweatherview() {
         temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
         loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
         condition.setText(weatherhash.get("condition"));
-        precip.setText("Precipitation: "+ weatherhash.get("precip") + "%");
-        humidity.setText("Humidity: " +weatherhash.get("humidity"));
+        precip.setText("Precipitation: " + weatherhash.get("precip") + "%");
+        humidity.setText("Humidity: " + weatherhash.get("humidity"));
         Glide.with(Homescreen_nav.this).load(weatherhash.get("picurl")).into(iweather);
         temp.setVisibility(View.VISIBLE);
         loca.setVisibility(View.VISIBLE);
@@ -359,15 +353,15 @@ public class Homescreen_nav extends AppCompatActivity
         condition.setVisibility(View.VISIBLE);
         precip.setVisibility(View.VISIBLE);
         humidity.setVisibility(View.VISIBLE);
+
     }
-    private void getJsonInfo(){
+
+    private void getJsonInfo() {
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
-        hand.makeServiceCall(PythonApiUrl);
-        while (Jsonparserweather.isdoneconn != true);
-
-
+        hand.makeServiceCall(finishedstring);
+        while (Jsonparserweather.isdoneconn != true) ;
 
         String jsonStr = Jsonparserweather.response;
 
@@ -397,26 +391,6 @@ public class Homescreen_nav extends AppCompatActivity
                 weatherhash.put("condition", condition);
                 weatherhash.put("picurl", picurl);
 
-                // Getting JSON Array node
-                //JSONArray weatherarray = jsonObj.getJSONArray("current_observation");
-
-                //for (int i = 0; i < weatherarray.length(); i++) {
-                //    JSONObject c = weatherarray.getJSONObject(i);
-
-                //    String weather = c.getString("weather");
-                //    String tempf = c.getString("temp_f");
-                //    String tempc = c.getString("temp_c");
-                //    String wind = c.getString("wind_string");
-                //    String wind_mph = c.getString("wind_mph");
-
-                //    // adding each child node to HashMap key => value
-                //    weatherhash.put("weather", weather);
-                //    weatherhash.put("tempf", tempf);
-                //    weatherhash.put("tempc", tempc);
-                //    weatherhash.put("wind", wind);
-                //    weatherhash.put("wind_mph", wind_mph);
-
-                //}
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
                 runOnUiThread(new Runnable() {
@@ -462,8 +436,7 @@ public class Homescreen_nav extends AppCompatActivity
                 try {
                     addressList = geocoder.getFromLocation(lat, lon, 1);
                     city = addressList.get(0).getLocality();
-                    if (city.contains(" "))
-                    {
+                    if (city.contains(" ")) {
                         city = city.replace(" ", "_");
                     }
                     Zipcode = addressList.get(0).getPostalCode();
