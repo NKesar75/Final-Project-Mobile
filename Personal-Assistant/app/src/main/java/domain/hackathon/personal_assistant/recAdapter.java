@@ -47,14 +47,9 @@ public class recAdapter extends RecyclerView.Adapter<recAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        //StringBuilder builder = new StringBuilder();
-        //for (String details : mDataset) {
-        //    builder.append(details + "\n");
-        //}
 
         String info = mDataset.get(position);
         holder.mTextView.setText(info);
-        //holder.mTextView.setText(builder);
 
     }
 

@@ -41,6 +41,7 @@ import android.location.Geocoder;
 import android.widget.Toast;
 
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
@@ -73,7 +74,7 @@ public class Homescreen_nav extends AppCompatActivity
     private static String audioFilePath;
     private boolean recstop = false;
     private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize/voice";
-    private String PythonApiUrlText = "https://personalassistant-ec554.appspot.com/recognize/text";
+    private String PythonApiUrlText = "https://personalassistant-ec554.appspot.com/recognize/text_weather";
     private String finishedstring = "";
 
     boolean doneupload = false;
@@ -146,6 +147,7 @@ public class Homescreen_nav extends AppCompatActivity
         humidity.setVisibility(View.INVISIBLE);
         loca.setVisibility(View.INVISIBLE);
         iweather.setVisibility(View.INVISIBLE);
+        progress = new ProgressDialog(this);
 
 
         FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fabnote);
@@ -170,7 +172,8 @@ public class Homescreen_nav extends AppCompatActivity
 
         FloatingActionButton voice = (FloatingActionButton) findViewById(R.id.fabvoice);
         getLocation();
-        finishedstring = PythonApiUrlText + "/" + state + "/" + city;
+        finishedstring = PythonApiUrlText + "/" + state + "/" + city + "/android";
+        Log.d(TAG, "Text url: " + finishedstring);
 
         getJsonInfo();
         updateweatherview();
@@ -178,9 +181,17 @@ public class Homescreen_nav extends AppCompatActivity
         voice.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (!recstop) {
+                    Toast.makeText(getApplicationContext(),
+                            "ITS RECORDING!",
+                            Toast.LENGTH_SHORT)
+                            .show();
                     recordAudio();
                     recstop = true;
                 } else if (recstop) {
+                    Toast.makeText(getApplicationContext(),
+                            "ITS NOT RECORDING!",
+                            Toast.LENGTH_SHORT)
+                            .show();
                     finishedstring = "";
                     doneupload = false;
                     recstop = false;
@@ -188,11 +199,12 @@ public class Homescreen_nav extends AppCompatActivity
                     mediaRecorder.release();
                     mediaRecorder = null;
                     getLocation();
-                    finishedstring = PythonApiUrl + "/" + state + "/" + city;
-                    //playAudio();
+                    finishedstring = PythonApiUrl + "/" + state + "/" + city + "/android";
+                    Log.d(TAG, "URL: " + finishedstring);
+                    playAudio();
                     uploadAudio();
-                    getJsonInfo();
-                    updateweatherview();
+                    //getJsonInfo();
+                    //updateweatherview();
                 }
             }
         });
@@ -253,10 +265,8 @@ public class Homescreen_nav extends AppCompatActivity
 
         if (id == R.id.maps) {
             startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
-
         } else if (id == R.id.youtube) {
             startActivity(new Intent(Homescreen_nav.this, Youtube.class));
-
         } else if (id == R.id.banking) {
 
         } else if (id == R.id.food) {
@@ -321,23 +331,33 @@ public class Homescreen_nav extends AppCompatActivity
     }
 
     private void uploadAudio() {
-        progress = new ProgressDialog(this);
         progress.setMessage("Please wait");
         progress.show();
         StorageReference filepath = mStorage.child("new_audio.amr");
         Uri uri = Uri.fromFile(new File(audioFilePath));
-        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+        filepath.putFile(uri).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                Log.d(TAG, "Failed to upload");
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                doneupload = true;
+                Log.d(TAG, "filled uploaded");
+                getJsonInfo();
+                updateweatherview();
             }
         });
-        try {
-            Thread.sleep(10000);
-        } catch (Exception C) {
-            C.printStackTrace();
-        }
-        progress.dismiss();
+        //try {
+        //    Thread.sleep(10000);
+        //} catch (Exception C) {
+        //    C.printStackTrace();
+        //}
+       // while (!doneupload);
     }
 
     private void updateweatherview() {
@@ -363,6 +383,11 @@ public class Homescreen_nav extends AppCompatActivity
         hand.makeServiceCall(finishedstring);
         while (Jsonparserweather.isdoneconn != true) ;
 
+        try {
+            Thread.sleep(7000);
+        } catch (Exception C) {
+            C.printStackTrace();
+        }
         String jsonStr = Jsonparserweather.response;
 
         Log.e(TAG, "Response from url: " + jsonStr);
@@ -380,6 +405,7 @@ public class Homescreen_nav extends AppCompatActivity
                 String precip = jsonObj.getString("precip");
                 String condition = jsonObj.getString("condition");
                 String picurl = jsonObj.getString("url");
+                String command = jsonObj.getString("command");
                 weatherhash.clear();
                 weatherhash.put("key", key);
                 weatherhash.put("tempf", tempf);
@@ -390,6 +416,11 @@ public class Homescreen_nav extends AppCompatActivity
                 weatherhash.put("precip", precip);
                 weatherhash.put("condition", condition);
                 weatherhash.put("picurl", picurl);
+                Toast.makeText(getApplicationContext(),
+                        "command: " + command,
+                        Toast.LENGTH_LONG)
+                        .show();
+                progress.dismiss();
 
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());

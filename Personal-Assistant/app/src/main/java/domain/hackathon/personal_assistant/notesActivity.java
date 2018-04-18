@@ -15,8 +15,6 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
-import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +24,7 @@ public class notesActivity extends AppCompatActivity {
     public static final String EXTRA_CIRCULAR_REVEAL_Y = "EXTRA_CIRCULAR_REVEAL_Y";
     private recAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-
     View rootLayout;
-
     private int revealX;
     private int revealY;
     List<String> list;
@@ -51,7 +47,6 @@ public class notesActivity extends AppCompatActivity {
             revealX = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_X, 0);
             revealY = intent.getIntExtra(EXTRA_CIRCULAR_REVEAL_Y, 0);
 
-
             ViewTreeObserver viewTreeObserver = rootLayout.getViewTreeObserver();
             if (viewTreeObserver.isAlive()) {
                 viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -68,7 +63,6 @@ public class notesActivity extends AppCompatActivity {
 
         reclist = (RecyclerView) findViewById(R.id.Reclist);
 
-        //tlist = (TextView) findViewById(R.id.list);
         list = new ArrayList<String>();
         list.add("This is a list");
         list.add("This is line 2 of the list");
@@ -83,17 +77,6 @@ public class notesActivity extends AppCompatActivity {
         reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         reclist.setItemAnimator(new DefaultItemAnimator());
         reclist.setAdapter(mAdapter);
-
-
-        //StringBuilder builder = new StringBuilder();
-        //for (String details : list) {
-        //    builder.append(details + "\n");
-        //}
-
-        //tlist.setText(builder.toString());
-
-
-
     }
 
     protected void revealActivity(int x, int y) {
@@ -128,7 +111,6 @@ public class notesActivity extends AppCompatActivity {
                     finish();
                 }
             });
-
 
             circularReveal.start();
         }

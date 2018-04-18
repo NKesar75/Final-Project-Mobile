@@ -23,8 +23,6 @@ public class createaccount extends AppCompatActivity {
     private DatabaseReference myRef;
     private FirebaseDatabase mFirebaseDatabase;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +32,6 @@ public class createaccount extends AppCompatActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         myRef = mFirebaseDatabase.getReference();
 
-
         Button signup = (Button) findViewById(R.id.btncreate);
         final EditText Email = (EditText) findViewById(R.id.txtcreateemail);
         final EditText Password = (EditText) findViewById(R.id.txtcreatepassword);
@@ -43,10 +40,6 @@ public class createaccount extends AppCompatActivity {
         final EditText month = (EditText) findViewById(R.id.txtcmonth);
         final EditText day = (EditText) findViewById(R.id.txtcday);
         final EditText year = (EditText) findViewById(R.id.txtcyear);
-
-
-
-
 
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,7 +87,6 @@ public class createaccount extends AppCompatActivity {
                     return;
                 }
 
-
                 auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(createaccount.this, new OnCompleteListener<AuthResult>() {
                             @Override
@@ -120,7 +112,6 @@ public class createaccount extends AppCompatActivity {
                                 }
                             }
                         });
-
             }
         });
 
