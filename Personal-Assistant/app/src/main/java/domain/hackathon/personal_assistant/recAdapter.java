@@ -1,9 +1,11 @@
 package domain.hackathon.personal_assistant;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -19,10 +21,34 @@ public class recAdapter extends RecyclerView.Adapter<recAdapter.ViewHolder> {
     // you provide access to all the views for a data item in a view holder
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        public TextView mTextView;
+        public TextView mTextView, tittle, snippet, url;
         public ViewHolder(View v) {
             super(v);
             mTextView = (TextView) v.findViewById(R.id.txtlistinfo);
+            tittle = (TextView) v.findViewById(R.id.txttittle);
+            snippet = (TextView) v.findViewById(R.id.txtsnippet);
+            url = (TextView) v.findViewById(R.id.txturl);
+            if (Homescreen_nav.whichlayout == "notes"){
+                mTextView.setVisibility(View.VISIBLE);
+                tittle.setVisibility(View.INVISIBLE);
+                snippet.setVisibility(View.INVISIBLE);
+                url.setVisibility(View.INVISIBLE);
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) snippet.getLayoutParams();
+                params.topMargin = 0;
+                params.alignWithParent = true;
+                snippet.setLayoutParams(params);
+                RelativeLayout.LayoutParams params2 = (RelativeLayout.LayoutParams) url.getLayoutParams();
+                params2.topMargin = 0;
+                params2.alignWithParent = true;
+                snippet.setLayoutParams(params2);
+            }
+            else if (Homescreen_nav.whichlayout == "google")
+            {
+                mTextView.setVisibility(View.INVISIBLE);
+                tittle.setVisibility(View.VISIBLE);
+                snippet.setVisibility(View.VISIBLE);
+                url.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -49,13 +75,25 @@ public class recAdapter extends RecyclerView.Adapter<recAdapter.ViewHolder> {
         // - replace the contents of the view with that element
 
         String info = mDataset.get(position);
-        holder.mTextView.setText(info);
+        if (Homescreen_nav.whichlayout == "notes")
+            holder.mTextView.setText(info);
+        else if (Homescreen_nav.whichlayout == "google")
+        {
+            position = position * 3;
+            holder.tittle.setText(mDataset.get(position));
+            holder.snippet.setText(mDataset.get(position + 1));
+            holder.url.setText(mDataset.get(position + 2));
+        }
 
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
+        if (Homescreen_nav.whichlayout == "google")
+        {
+            return mDataset.size() / 3;
+        }
         return mDataset.size();
     }
 }

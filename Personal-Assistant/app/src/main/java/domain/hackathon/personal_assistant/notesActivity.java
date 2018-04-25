@@ -36,6 +36,7 @@ public class notesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notes);
         final Intent intent = getIntent();
+        Homescreen_nav.whichlayout = "notes";
 
         rootLayout = findViewById(R.id.root_layout);
 

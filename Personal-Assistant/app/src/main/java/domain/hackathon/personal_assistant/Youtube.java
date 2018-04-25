@@ -3,6 +3,12 @@ package domain.hackathon.personal_assistant;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubeBaseActivity;
@@ -11,24 +17,85 @@ import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+
 public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener {
 
     private static final int RECOVERY_REQUEST = 1;
     private YouTubePlayerView youTubeView;
+    EditText search;
+    String videosearch;
+    String searchurl = "https://personalassistant-ec554.appspot.com/recognize/";
+    private String TAG = Youtube.class.getSimpleName();
+    String finishedurlstring;
+    HashMap<String, String> searchhash;
+    YouTubePlayer  mplayer;
+    boolean isplaying = false;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_youtube);
-
+        searchhash = new HashMap<>();
         youTubeView = (YouTubePlayerView) findViewById(R.id.youtube_view);
-        youTubeView.initialize(Config.YOUTUBE_API_KEY, this);
+        final Intent intent = getIntent();
+        if (intent.hasExtra("search"))
+        {
+            videosearch = intent.getStringExtra("search");
+            finishedurlstring = searchurl + videosearch + "/key" + "/Youtube";
+            getYoutubeJson();
+            youTubeView.setVisibility(View.VISIBLE);
+            youTubeView.initialize(Config.YOUTUBE_API_KEY, Youtube.this);
+        }
+
+
+        TextView.OnEditorActionListener exampleListener = new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == 6){
+                    String texttosearch = search.getText().toString();
+                    if (texttosearch.contains(" "))
+                    {
+                        texttosearch = texttosearch.replace(" ", "_");
+                    }
+                    videosearch = "play_" + texttosearch;
+                    finishedurlstring = "";
+                    finishedurlstring = searchurl + videosearch + "/key" + "/Youtube";
+                    getYoutubeJson();
+
+                    if (!isplaying)
+                    {
+                        youTubeView.initialize(Config.YOUTUBE_API_KEY, Youtube.this);
+                        youTubeView.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        mplayer.loadVideo(searchhash.get("id").toString());
+                    }
+                }
+                return true;
+            }
+        };
+
+        search = (EditText) findViewById(R.id.txtyoutubesearch);
+        search.setOnEditorActionListener(exampleListener);
+        
+        //youTubeView.setVisibility(View.INVISIBLE);
     }
+
 
     @Override
     public void onInitializationSuccess(Provider provider, YouTubePlayer player, boolean wasRestored) {
+        mplayer = player;
+
+        mplayer.pause();
         if (!wasRestored) {
-            player.cueVideo("fhWaJi1Hsfo"); // Plays https://www.youtube.com/watch?v=fhWaJi1Hsfo
+            isplaying = true;
+            mplayer.loadVideo(searchhash.get("id").toString()); // Plays https://www.youtube.com/watch?v=fhWaJi1Hsfo
         }
     }
 
@@ -53,4 +120,57 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
     protected Provider getYouTubePlayerProvider() {
         return youTubeView;
     }
+    private void getYoutubeJson()
+    {
+        Jsonparserweather hand = new Jsonparserweather();
+
+        // Making a request to url and getting response
+        hand.makeServiceCall(finishedurlstring);
+        while (Jsonparserweather.isdoneconn != true) ;
+
+        try {
+            Thread.sleep(1000);
+        } catch (Exception C) {
+            C.printStackTrace();
+        }
+        String jsonStr = Jsonparserweather.response;
+
+
+        Log.e(TAG, "Response from url: " + jsonStr);
+        if (jsonStr != null) {
+            try {
+                JSONObject jsonObj = new JSONObject(jsonStr);
+
+                String id = jsonObj.getString("id");
+                searchhash.clear();
+                searchhash.put("id", id);
+
+            } catch (final JSONException e) {
+                Log.e(TAG, "Json parsing error: " + e.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Json parsing error: " + e.getMessage(),
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+
+            }
+        } else {
+            Log.e(TAG, "Couldn't get json from server.");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            "Couldn't get json from server.",
+                            Toast.LENGTH_LONG)
+                            .show();
+                }
+            });
+
+        }
+    }
+
 }

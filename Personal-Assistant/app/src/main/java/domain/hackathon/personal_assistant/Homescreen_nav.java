@@ -18,6 +18,9 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -73,9 +76,10 @@ public class Homescreen_nav extends AppCompatActivity
     private static MediaPlayer mediaPlayer;
     private static String audioFilePath;
     private boolean recstop = false;
-    private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize/voice";
+    private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize";
     private String PythonApiUrlText = "https://personalassistant-ec554.appspot.com/recognize/text_weather";
     private String finishedstring = "";
+    public static String whichlayout;
 
     boolean doneupload = false;
 
@@ -92,6 +96,7 @@ public class Homescreen_nav extends AppCompatActivity
     TextView temp, loca, condition, precip, humidity;
     ImageView iweather;
     public ProgressDialog progress;
+    private String voiceresult;
 
 
     private boolean permissionToRecordAccepted = false;
@@ -172,40 +177,14 @@ public class Homescreen_nav extends AppCompatActivity
 
         FloatingActionButton voice = (FloatingActionButton) findViewById(R.id.fabvoice);
         getLocation();
-        finishedstring = PythonApiUrlText + "/" + state + "/" + city + "/android";
-        Log.d(TAG, "Text url: " + finishedstring);
+        finishedstring = PythonApiUrl + "/weather" + "/" + state + "/" + city;
 
         getJsonInfo();
         updateweatherview();
 
         voice.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (!recstop) {
-                    Toast.makeText(getApplicationContext(),
-                            "ITS RECORDING!",
-                            Toast.LENGTH_SHORT)
-                            .show();
-                    recordAudio();
-                    recstop = true;
-                } else if (recstop) {
-                    Toast.makeText(getApplicationContext(),
-                            "ITS NOT RECORDING!",
-                            Toast.LENGTH_SHORT)
-                            .show();
-                    finishedstring = "";
-                    doneupload = false;
-                    recstop = false;
-                    mediaRecorder.stop();
-                    mediaRecorder.release();
-                    mediaRecorder = null;
-                    getLocation();
-                    finishedstring = PythonApiUrl + "/" + state + "/" + city + "/android";
-                    Log.d(TAG, "URL: " + finishedstring);
-                    playAudio();
-                    uploadAudio();
-                    //getJsonInfo();
-                    //updateweatherview();
-                }
+                voiceReconize();
             }
         });
 
@@ -272,7 +251,7 @@ public class Homescreen_nav extends AppCompatActivity
         } else if (id == R.id.food) {
 
         } else if (id == R.id.googleSearch) {
-
+            startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
         } else if (id == R.id.scheduling) {
 
         } else if (id == R.id.settings) {
@@ -290,76 +269,6 @@ public class Homescreen_nav extends AppCompatActivity
         return true;
     }
 
-    public void recordAudio() {
-        isRecording = true;
-
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
-        mediaRecorder.setOutputFile(audioFilePath);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        try {
-            mediaRecorder.prepare();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mediaRecorder.start();
-    }
-
-    public void stopAudio(View view) {
-        if (isRecording) {
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            mediaRecorder = null;
-            isRecording = false;
-        } else {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-    }
-
-
-    void playAudio() {
-        mediaPlayer = new MediaPlayer();
-        try {
-            mediaPlayer.setDataSource(audioFilePath);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void uploadAudio() {
-        progress.setMessage("Please wait");
-        progress.show();
-        StorageReference filepath = mStorage.child("new_audio.amr");
-        Uri uri = Uri.fromFile(new File(audioFilePath));
-        filepath.putFile(uri).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
-                Log.d(TAG, "Failed to upload");
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                doneupload = true;
-                Log.d(TAG, "filled uploaded");
-                getJsonInfo();
-                updateweatherview();
-            }
-        });
-        //try {
-        //    Thread.sleep(10000);
-        //} catch (Exception C) {
-        //    C.printStackTrace();
-        //}
-       // while (!doneupload);
-    }
-
     private void updateweatherview() {
         temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
         loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
@@ -373,22 +282,26 @@ public class Homescreen_nav extends AppCompatActivity
         condition.setVisibility(View.VISIBLE);
         precip.setVisibility(View.VISIBLE);
         humidity.setVisibility(View.VISIBLE);
+        progress.dismiss();
+
 
     }
 
     private void getJsonInfo() {
         Jsonparserweather hand = new Jsonparserweather();
+        progress.show();
 
         // Making a request to url and getting response
         hand.makeServiceCall(finishedstring);
         while (Jsonparserweather.isdoneconn != true) ;
 
         try {
-            Thread.sleep(7000);
+            Thread.sleep(1000);
         } catch (Exception C) {
             C.printStackTrace();
         }
         String jsonStr = Jsonparserweather.response;
+
 
         Log.e(TAG, "Response from url: " + jsonStr);
 
@@ -416,11 +329,6 @@ public class Homescreen_nav extends AppCompatActivity
                 weatherhash.put("precip", precip);
                 weatherhash.put("condition", condition);
                 weatherhash.put("picurl", picurl);
-                Toast.makeText(getApplicationContext(),
-                        "command: " + command,
-                        Toast.LENGTH_LONG)
-                        .show();
-                progress.dismiss();
 
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -441,13 +349,14 @@ public class Homescreen_nav extends AppCompatActivity
                 @Override
                 public void run() {
                     Toast.makeText(getApplicationContext(),
-                            "Couldn't get json from server. Check LogCat for possible errors!",
+                            "Couldn't get json from server.",
                             Toast.LENGTH_LONG)
                             .show();
                 }
             });
 
         }
+
     }
 
     void getLocation() {
@@ -688,6 +597,99 @@ public class Homescreen_nav extends AppCompatActivity
                 }
             }
         }
+    }
+    void voiceReconize()
+    {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
+                "domain.hackathon.personal_assistant");
+
+        SpeechRecognizer recognizer = SpeechRecognizer
+                .createSpeechRecognizer(this.getApplicationContext());
+        RecognitionListener listener = new RecognitionListener() {
+            @Override
+            public void onResults(Bundle results) {
+                ArrayList<String> voiceResults = results
+                        .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                Log.d(TAG, "Voiceresults: " + voiceResults.toString());
+                voiceresult = voiceResults.get(0);
+                if (voiceresult.contains(" "))
+                {
+                    voiceresult = voiceresult.replace(" ", "_");
+                }
+                if (voiceresult.contains("play") || voiceresult.contains("Play")){
+                    Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
+                    intent.putExtra("search", voiceresult);
+                    startActivity(intent);
+                    return;
+                }
+                if (voiceresult.contains("search_for")){
+                    Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
+                    intent.putExtra("gsearch", voiceresult);
+                    startActivity(intent);
+                    return;
+                }
+                finishedstring = "";
+                finishedstring = PythonApiUrl + "/" + voiceresult + "/" + state + "/" + city;
+                getJsonInfo();
+                updateweatherview();
+
+                if (voiceResults == null) {
+                    Log.e(TAG, "No voice results");
+                }
+            }
+
+            @Override
+            public void onReadyForSpeech(Bundle params) {
+                Log.d(TAG, "Ready for speech");
+            }
+
+            @Override
+            public void onError(int error) {
+                Log.d(TAG,
+                        "Error listening for speech: " + error);
+            }
+
+            @Override
+            public void onBeginningOfSpeech() {
+                Log.d(TAG, "Speech starting");
+            }
+
+            @Override
+            public void onBufferReceived(byte[] buffer) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onEndOfSpeech() {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onEvent(int eventType, Bundle params) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onPartialResults(Bundle partialResults) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onRmsChanged(float rmsdB) {
+                // TODO Auto-generated method stub
+
+            }
+        };
+        recognizer.setRecognitionListener(listener);
+        recognizer.startListening(intent);
+
     }
 }
 
