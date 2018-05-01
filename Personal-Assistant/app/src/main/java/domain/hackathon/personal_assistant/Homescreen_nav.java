@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.icu.text.SimpleDateFormat;
 import android.location.Address;
 import android.location.Location;
 import android.location.LocationManager;
@@ -39,6 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.location.Geocoder;
 import android.widget.Toast;
@@ -60,16 +62,18 @@ import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class Homescreen_nav extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class Homescreen_nav extends AppCompatActivity {
     private FirebaseAuth auth;
     private boolean isRecording = false;
     private static MediaRecorder mediaRecorder;
@@ -80,9 +84,9 @@ public class Homescreen_nav extends AppCompatActivity
     private String PythonApiUrlText = "https://personalassistant-ec554.appspot.com/recognize/text_weather";
     private String finishedstring = "";
     public static String whichlayout;
-
+    ArrayList<String> searchlist;
+    ArrayList<HashMap<String, String>> weatherhash;
     boolean doneupload = false;
-
     LocationManager locationManager;
     String city;
     String state;
@@ -91,10 +95,9 @@ public class Homescreen_nav extends AppCompatActivity
     List<Address> addressList;
     static final int REQUEST_LOCATION = 1;
     private String TAG = MainActivity.class.getSimpleName();
-    HashMap<String, String> weatherhash;
+    HashMap<String, String> hashjson;
     private StorageReference mStorage;
-    TextView temp, loca, condition, precip, humidity;
-    ImageView iweather;
+    TextView commands;
     public ProgressDialog progress;
     private String voiceresult;
 
@@ -131,7 +134,11 @@ public class Homescreen_nav extends AppCompatActivity
                     new String[]{android.Manifest.permission.RECORD_AUDIO},
                     1);
         }
-        weatherhash = new HashMap<>();
+        weatherhash = new ArrayList<>();
+
+        hashjson = new HashMap<>();
+        searchlist = new ArrayList<String>();
+
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -139,19 +146,8 @@ public class Homescreen_nav extends AppCompatActivity
         mStorage = FirebaseStorage.getInstance().getReference();
 
 
-        temp = (TextView) findViewById(R.id.temp);
-        loca = (TextView) findViewById(R.id.location);
-        condition = (TextView) findViewById(R.id.condition);
-        precip = (TextView) findViewById(R.id.precip);
-        humidity = (TextView) findViewById(R.id.humdity);
-
-        iweather = (ImageView) findViewById(R.id.weather);
-        temp.setVisibility(View.INVISIBLE);
-        condition.setVisibility(View.INVISIBLE);
-        precip.setVisibility(View.INVISIBLE);
-        humidity.setVisibility(View.INVISIBLE);
-        loca.setVisibility(View.INVISIBLE);
-        iweather.setVisibility(View.INVISIBLE);
+        commands = (TextView) findViewById(R.id.commands);
+        commands.setText("Try using a command\nWhat's the weather\nWhat is the weather in\nSearch for\nPlay");
         progress = new ProgressDialog(this);
 
 
@@ -162,14 +158,7 @@ public class Homescreen_nav extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
         auth = FirebaseAuth.getInstance();
         audioFilePath = getExternalCacheDir().getAbsolutePath();
 
@@ -179,8 +168,8 @@ public class Homescreen_nav extends AppCompatActivity
         getLocation();
         finishedstring = PythonApiUrl + "/weather" + "/" + state + "/" + city;
 
-        getJsonInfo();
-        updateweatherview();
+        //getJsonInfo();
+        //updateweatherview();
 
         voice.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -204,15 +193,7 @@ public class Homescreen_nav extends AppCompatActivity
         ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -229,74 +210,28 @@ public class Homescreen_nav extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.loggout) {
+            auth.signOut();
+            Intent intent = new Intent(this, MainActivity.class);
+            finish();
+            startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
 
-        if (id == R.id.maps) {
-            startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
-        } else if (id == R.id.youtube) {
-            startActivity(new Intent(Homescreen_nav.this, Youtube.class));
-        } else if (id == R.id.banking) {
-
-        } else if (id == R.id.food) {
-
-        } else if (id == R.id.googleSearch) {
-            startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
-        } else if (id == R.id.scheduling) {
-
-        } else if (id == R.id.settings) {
-
-        } else if (id == R.id.about) {
-
-        } else if (id == R.id.logout) {
-            auth.signOut();
-            finish();
-            startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    private void updateweatherview() {
-        temp.setText(weatherhash.get("tempf") + (char) 0x00B0 + "F");
-        loca.setText(weatherhash.get("city") + ", " + weatherhash.get("state"));
-        condition.setText(weatherhash.get("condition"));
-        precip.setText("Precipitation: " + weatherhash.get("precip") + "%");
-        humidity.setText("Humidity: " + weatherhash.get("humidity"));
-        Glide.with(Homescreen_nav.this).load(weatherhash.get("picurl")).into(iweather);
-        temp.setVisibility(View.VISIBLE);
-        loca.setVisibility(View.VISIBLE);
-        iweather.setVisibility(View.VISIBLE);
-        condition.setVisibility(View.VISIBLE);
-        precip.setVisibility(View.VISIBLE);
-        humidity.setVisibility(View.VISIBLE);
-        progress.dismiss();
-
-
-    }
 
     private void getJsonInfo() {
         Jsonparserweather hand = new Jsonparserweather();
-        progress.show();
 
         // Making a request to url and getting response
         hand.makeServiceCall(finishedstring);
         while (Jsonparserweather.isdoneconn != true) ;
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(1500);
         } catch (Exception C) {
             C.printStackTrace();
         }
@@ -310,25 +245,124 @@ public class Homescreen_nav extends AppCompatActivity
                 JSONObject jsonObj = new JSONObject(jsonStr);
 
                 String key = jsonObj.getString("key");
-                String tempf = jsonObj.getString("tempf");
-                String tempc = jsonObj.getString("tempc");
-                String city = jsonObj.getString("city");
-                String state = jsonObj.getString("state");
-                String humidity = jsonObj.getString("humidity");
-                String precip = jsonObj.getString("precip");
-                String condition = jsonObj.getString("condition");
-                String picurl = jsonObj.getString("url");
-                String command = jsonObj.getString("command");
-                weatherhash.clear();
-                weatherhash.put("key", key);
-                weatherhash.put("tempf", tempf);
-                weatherhash.put("tempc", tempc);
-                weatherhash.put("city", city);
-                weatherhash.put("state", state);
-                weatherhash.put("humidity", humidity);
-                weatherhash.put("precip", precip);
-                weatherhash.put("condition", condition);
-                weatherhash.put("picurl", picurl);
+                //google weather youtube
+                if (key.equals("weather"))
+                {
+                    weatherhash.clear();
+                    // Getting JSON Array node
+                    JSONArray jsonArray = jsonObj.getJSONArray("results");
+                    String city = jsonObj.getString("city");
+                    String state = jsonObj.getString("state");
+
+
+                    // looping through All Contacts
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject inside = jsonArray.getJSONObject(i);
+                        String temp_highf = inside.getString("temp_highf");
+                        String temp_highc = inside.getString("temp_highc");
+                        String humidity = inside.getString("humidity");
+                        String precip = inside.getString("precip");
+                        String condition = inside.getString("condition");
+                        String picurl = inside.getString("url");
+                        String temp_lowf = inside.getString("temp_lowf");
+                        String stringdate = inside.getString("day") + ":" + inside.getString("month") + ":" + inside.getString("year");
+                        SimpleDateFormat regularDateFormat = new SimpleDateFormat("dd:MM:yyyy");
+                        String days = "";
+
+                        try{
+                            Date date = regularDateFormat.parse(stringdate);
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTime(date);
+                            int day = calendar.get(Calendar.DAY_OF_WEEK);
+                            if (day == Calendar.MONDAY)
+                            {
+                                days = "Monday";
+
+                            }
+                            else if (day == Calendar.TUESDAY)
+                            {
+                                days = "Tuesday";
+
+                            }
+                            else if (day == Calendar.WEDNESDAY)
+                            {
+                                days = "Wednesday";
+
+                            }
+                            else if (day == Calendar.THURSDAY)
+                            {
+                                days = "Thursday";
+
+                            }
+                            else if (day == Calendar.FRIDAY)
+                            {
+                                days = "Friday";
+
+                            }
+                            else if (day == Calendar.SATURDAY)
+                            {
+                                days = "Saturday";
+
+                            }
+                            else if (day == Calendar.SUNDAY)
+                            {
+                                days = "Sunday";
+
+                            }
+                        } catch (Exception e)
+                        {
+                            Log.d(TAG,"Exception: " + e);
+                        }
+
+                        HashMap<String, String> weather = new HashMap<>();
+                        weather.put("day", days);
+                        weather.put("key", key);
+                        weather.put("temp_highf", temp_highf);
+                        weather.put("temp_highc", temp_highc);
+                        weather.put("temp_lowf", temp_lowf);
+                        weather.put("city", city);
+                        weather.put("state", state);
+                        weather.put("humidity", humidity);
+                        weather.put("precip", precip);
+                        weather.put("condition", condition);
+                        weather.put("picurl", picurl);
+                        weatherhash.add(weather);
+                    }
+                    Intent intent = new Intent(Homescreen_nav.this, weather.class);
+                    intent.putExtra("wsearch", weatherhash);
+                    startActivity(intent);
+
+
+                }
+                else if (key.equals("google"))
+                {
+                    JSONArray jsonArray = jsonObj.getJSONArray("results");
+                    searchlist.clear();
+
+                    for(int i=0; i< jsonArray.length(); i++)
+                    {
+                        JSONObject inside = jsonArray.getJSONObject(i);
+                        String title = inside.getString("title");
+                        String snippet = inside.getString("snippet");
+                        String url = inside.getString("url");
+                        searchlist.add(title);
+                        searchlist.add(snippet);
+                        searchlist.add(url);
+                    }
+                    Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
+                    intent.putExtra("gsearch", searchlist);
+                    startActivity(intent);
+                }
+                else if (key.equals("youtube"))
+                {
+                    String id = jsonObj.getString("id");
+                    hashjson.clear();
+                    hashjson.put("id", id);
+                    Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
+                    intent.putExtra("search", (Serializable) hashjson);
+                    startActivity(intent);
+                }
+
 
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -356,6 +390,7 @@ public class Homescreen_nav extends AppCompatActivity
             });
 
         }
+    progress.dismiss();
 
     }
 
@@ -611,6 +646,8 @@ public class Homescreen_nav extends AppCompatActivity
         RecognitionListener listener = new RecognitionListener() {
             @Override
             public void onResults(Bundle results) {
+                progress.show();
+
                 ArrayList<String> voiceResults = results
                         .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 Log.d(TAG, "Voiceresults: " + voiceResults.toString());
@@ -619,22 +656,10 @@ public class Homescreen_nav extends AppCompatActivity
                 {
                     voiceresult = voiceresult.replace(" ", "_");
                 }
-                if (voiceresult.contains("play") || voiceresult.contains("Play")){
-                    Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
-                    intent.putExtra("search", voiceresult);
-                    startActivity(intent);
-                    return;
-                }
-                if (voiceresult.contains("search_for")){
-                    Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
-                    intent.putExtra("gsearch", voiceresult);
-                    startActivity(intent);
-                    return;
-                }
                 finishedstring = "";
                 finishedstring = PythonApiUrl + "/" + voiceresult + "/" + state + "/" + city;
                 getJsonInfo();
-                updateweatherview();
+                //updateweatherview();
 
                 if (voiceResults == null) {
                     Log.e(TAG, "No voice results");
@@ -648,8 +673,10 @@ public class Homescreen_nav extends AppCompatActivity
 
             @Override
             public void onError(int error) {
-                Log.d(TAG,
-                        "Error listening for speech: " + error);
+                if (error == 7)
+                    Toast.makeText(getApplicationContext(), "Couldn't understand you. Please say your command again.", Toast.LENGTH_SHORT).show();
+                else
+                    Log.d(TAG, "Error listening for speech: " + error);
             }
 
             @Override
@@ -659,31 +686,26 @@ public class Homescreen_nav extends AppCompatActivity
 
             @Override
             public void onBufferReceived(byte[] buffer) {
-                // TODO Auto-generated method stub
 
             }
 
             @Override
             public void onEndOfSpeech() {
-                // TODO Auto-generated method stub
 
             }
 
             @Override
             public void onEvent(int eventType, Bundle params) {
-                // TODO Auto-generated method stub
 
             }
 
             @Override
             public void onPartialResults(Bundle partialResults) {
-                // TODO Auto-generated method stub
 
             }
 
             @Override
             public void onRmsChanged(float rmsdB) {
-                // TODO Auto-generated method stub
 
             }
         };

@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GoogleSearch extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class GoogleSearch extends AppCompatActivity {
     private FirebaseAuth auth;
     String search;
     String searchurl = "https://personalassistant-ec554.appspot.com/recognize/";
@@ -60,12 +60,13 @@ public class GoogleSearch extends AppCompatActivity implements NavigationView.On
 
         final Intent intent = getIntent();
         if (intent.hasExtra("gsearch"))
-            search = intent.getStringExtra("gsearch");
+            //search = intent.getStringExtra("gsearch");
+            searchlist = (ArrayList<String>) getIntent().getSerializableExtra("gsearch");
         else
             search = "search_for_people";
-        finishedurlstring = searchurl + search + "/key" + "/Google";
+        //finishedurlstring = searchurl + search + "/key" + "/Google";
 
-        getGoogleJson();
+        //getGoogleJson();
 
 
         mAdapter = new recAdapter(searchlist);
@@ -114,25 +115,10 @@ public class GoogleSearch extends AppCompatActivity implements NavigationView.On
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.gdrawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.gnav_view);
-        navigationView.setNavigationItemSelectedListener(this);
         auth = FirebaseAuth.getInstance();
     }
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.gdrawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -149,45 +135,18 @@ public class GoogleSearch extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.logout) {
+            auth.signOut();
+            Intent intent = new Intent(this, MainActivity.class);
+            finish();
+            startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
 
-        if (id == R.id.maps) {
-            startActivity(new Intent(GoogleSearch.this, MapsActivity.class));
-        } else if (id == R.id.youtube) {
-            startActivity(new Intent(GoogleSearch.this, Youtube.class));
-        } else if (id == R.id.banking) {
-
-        } else if (id == R.id.food) {
-
-        } else if (id == R.id.googleSearch) {
-
-        } else if (id == R.id.scheduling) {
-
-        } else if (id == R.id.settings) {
-
-        } else if (id == R.id.about) {
-
-        } else if (id == R.id.logout) {
-            auth.signOut();
-            finish();
-            startActivity(new Intent(GoogleSearch.this, MainActivity.class));
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.gdrawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
     private void getGoogleJson()
     {
         Jsonparserweather hand = new Jsonparserweather();
@@ -221,8 +180,6 @@ public class GoogleSearch extends AppCompatActivity implements NavigationView.On
                     searchlist.add(title);
                     searchlist.add(snippet);
                     searchlist.add(url);
-
-
                 }
 
 

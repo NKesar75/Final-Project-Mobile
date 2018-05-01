@@ -45,7 +45,11 @@
             android:label="@string/title_activity_maps" />
         <activity android:name=".notesActivity" />
         <activity android:name=".Youtube" />
-        <activity android:name=".GoogleSearch"></activity>
+        <activity android:name=".GoogleSearch" />
+        <activity
+            android:name=".weather"
+            android:label="@string/title_activity_weather"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

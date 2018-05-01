@@ -21,7 +21,7 @@ public class Jsonparserweather {
     private static final String TAG = Jsonparserweather.class.getSimpleName();
     public static String response;
     public static boolean isdoneconn = false;
-    private String test = "https://personalassistant-ec554.appspot.com/recognize/voice/FL/Orlando";
+    private String test = "https://personalassistant-ec554.appspot.com/recognize/weather/FL/Orlando";
 
 
     public Jsonparserweather() {

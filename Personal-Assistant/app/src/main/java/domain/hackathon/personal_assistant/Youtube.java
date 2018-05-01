@@ -46,9 +46,10 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
         final Intent intent = getIntent();
         if (intent.hasExtra("search"))
         {
-            videosearch = intent.getStringExtra("search");
-            finishedurlstring = searchurl + videosearch + "/key" + "/Youtube";
-            getYoutubeJson();
+            searchhash = (HashMap<String, String>)intent.getSerializableExtra("search");
+            //videosearch = intent.getStringExtra("search");
+            //finishedurlstring = searchurl + videosearch + "/key" + "/Youtube";
+            //getYoutubeJson();
             youTubeView.setVisibility(View.VISIBLE);
             youTubeView.initialize(Config.YOUTUBE_API_KEY, Youtube.this);
         }
@@ -74,7 +75,8 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
                         youTubeView.setVisibility(View.VISIBLE);
                     }
                     else {
-                        mplayer.loadVideo(searchhash.get("id").toString());
+                        if (searchhash.size() > 0)
+                            mplayer.loadVideo(searchhash.get("id").toString());
                     }
                 }
                 return true;
@@ -94,8 +96,11 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
 
         mplayer.pause();
         if (!wasRestored) {
-            isplaying = true;
-            mplayer.loadVideo(searchhash.get("id").toString()); // Plays https://www.youtube.com/watch?v=fhWaJi1Hsfo
+            if (searchhash.size() > 0){
+                isplaying = true;
+                mplayer.loadVideo(searchhash.get("id").toString()); // Plays https://www.youtube.com/watch?v=fhWaJi1Hsfo
+            }
+
         }
     }
 
