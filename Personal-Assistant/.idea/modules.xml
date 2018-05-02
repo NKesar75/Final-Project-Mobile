@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Personal-Assistant.iml" filepath="$PROJECT_DIR$/Personal-Assistant.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pawatch/pawatch.iml" filepath="$PROJECT_DIR$/pawatch/pawatch.iml" />
     </modules>
   </component>
 </project>

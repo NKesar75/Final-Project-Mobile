@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="domain.hackathon.personal_assistant.weather"
+    tools:showIn="@layout/activity_weather">
+
+    <TextView
+        android:id="@+id/scitystate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="City and State"
+        android:layout_alignParentTop="true"
+        android:textSize="36dp"
+        android:textAlignment="center" />
+    <View
+        android:id="@+id/line"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/scitystate"
+        android:background="#696969" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/wReclist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/line">
+    </android.support.v7.widget.RecyclerView>
+
+</RelativeLayout>

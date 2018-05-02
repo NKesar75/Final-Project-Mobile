@@ -63,10 +63,11 @@ public class GoogleSearch extends AppCompatActivity {
             //search = intent.getStringExtra("gsearch");
             searchlist = (ArrayList<String>) getIntent().getSerializableExtra("gsearch");
         else
+        {
             search = "search_for_people";
-        //finishedurlstring = searchurl + search + "/key" + "/Google";
-
-        //getGoogleJson();
+            finishedurlstring = searchurl + search + "/key" + "/Google";
+            getGoogleJson();
+        }
 
 
         mAdapter = new recAdapter(searchlist);

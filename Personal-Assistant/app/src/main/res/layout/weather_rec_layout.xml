@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/sday"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Day of the week"
+        android:textSize="24dp"
+        android:layout_alignParentTop="true"
+        android:textAlignment="center" />
+    <View
+        android:id="@+id/sline"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/sday"
+        android:background="#000000" />
+
+
+    <ImageView
+        android:id="@+id/sweathericon"
+        android:layout_width="165dp"
+        android:layout_height="106dp"
+        android:layout_below="@+id/sline"
+        app:srcCompat="@mipmap/ic_logo" />
+
+    <TextView
+        android:id="@+id/stemph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sday"
+        android:layout_toEndOf="@+id/sweathericon"
+        android:text="temph" />
+
+    <TextView
+        android:id="@+id/stempl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/stemph"
+        android:layout_toEndOf="@+id/sweathericon"
+        android:text="templ" />
+
+    <TextView
+        android:id="@+id/shumidity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/scondition"
+        android:layout_toEndOf="@+id/sweathericon"
+        android:text="humid" />
+
+    <TextView
+        android:id="@+id/scondition"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sprecip"
+        android:layout_toEndOf="@+id/sweathericon"
+        android:text="condition" />
+
+    <TextView
+        android:id="@+id/sprecip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/stempl"
+        android:layout_toEndOf="@+id/sweathericon"
+        android:text="precip" />
+
+
+</RelativeLayout>

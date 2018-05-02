@@ -1,6 +1,7 @@
 package domain.hackathon.personal_assistant;
 
 import android.*;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -46,8 +48,16 @@ import android.location.Geocoder;
 import android.widget.Toast;
 
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Wearable;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -73,7 +83,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class Homescreen_nav extends AppCompatActivity {
+public class Homescreen_nav extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener,
+        DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private FirebaseAuth auth;
     private boolean isRecording = false;
     private static MediaRecorder mediaRecorder;
@@ -105,6 +117,37 @@ public class Homescreen_nav extends AppCompatActivity {
     private boolean permissionToRecordAccepted = false;
     private String[] permissions = {android.Manifest.permission.RECORD_AUDIO};
 
+    private Activity activity;
+    private GoogleApiClient googleClient;
+
+    //on successful connection to play services, add data listner
+    public void onConnected(Bundle connectionHint) {
+        Wearable.DataApi.addListener(googleClient, this);
+    }
+
+    //on resuming activity, reconnect play services
+    public void onResume(){
+        super.onResume();
+        googleClient.connect();
+    }
+
+    //on suspended connection, remove play services
+    public void onConnectionSuspended(int cause) {
+        Wearable.DataApi.removeListener(googleClient, this);
+    }
+
+    //pause listener, disconnect play services
+    public void onPause(){
+        super.onPause();
+        Wearable.DataApi.removeListener(googleClient, this);
+        googleClient.disconnect();
+    }
+
+    //On failed connection to play services, remove the data listener
+    public void onConnectionFailed(ConnectionResult result) {
+        Wearable.DataApi.removeListener(googleClient, this);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -134,6 +177,17 @@ public class Homescreen_nav extends AppCompatActivity {
                     new String[]{android.Manifest.permission.RECORD_AUDIO},
                     1);
         }
+
+        this.activity = this;
+
+        //data layer
+        googleClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+
         weatherhash = new ArrayList<>();
 
         hashjson = new HashMap<>();
@@ -158,7 +212,14 @@ public class Homescreen_nav extends AppCompatActivity {
             }
         });
 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
 
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
         auth = FirebaseAuth.getInstance();
         audioFilePath = getExternalCacheDir().getAbsolutePath();
 
@@ -179,6 +240,33 @@ public class Homescreen_nav extends AppCompatActivity {
 
 
     }
+    //watches for data item
+    public void onDataChanged(DataEventBuffer dataEvents) {
+        Log.d(TAG, "onDataChanged");
+        for(DataEvent event: dataEvents){
+
+            //data item changed
+            if(event.getType() == DataEvent.TYPE_CHANGED){
+
+                DataItem item = event.getDataItem();
+                DataMapItem dataMapItem = DataMapItem.fromDataItem(item);
+
+                if(item.getUri().getPath().equals("/apiurl")){
+
+                    Log.d("debug", "caught message passed to me by the wearable");
+
+                    String message = dataMapItem.getDataMap().getString("message");
+
+
+                    Log.d("debug", "here is the message: " + message);
+                    Toast.makeText(getApplicationContext(), "Message: " + message, Toast.LENGTH_LONG).show();
+
+
+
+                }
+            }
+        }
+    }
 
     public void presentActivity(View view) {
         ActivityOptionsCompat options = ActivityOptionsCompat.
@@ -193,7 +281,20 @@ public class Homescreen_nav extends AppCompatActivity {
         ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 
-
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        progress.dismiss();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -210,7 +311,7 @@ public class Homescreen_nav extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.loggout) {
+        if (id == R.id.logout) {
             auth.signOut();
             Intent intent = new Intent(this, MainActivity.class);
             finish();
@@ -221,176 +322,225 @@ public class Homescreen_nav extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
 
+        if (id == R.id.maps) {
+            startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
+        } else if (id == R.id.youtube) {
+            startActivity(new Intent(Homescreen_nav.this, Youtube.class));
+        } else if (id == R.id.banking) {
+
+        } else if (id == R.id.food) {
+
+        } else if (id == R.id.googleSearch) {
+            startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
+        } else if (id == R.id.scheduling) {
+
+        } else if (id == R.id.settings) {
+
+        } else if (id == R.id.about) {
+
+        } else if (id == R.id.logout) {
+            auth.signOut();
+            finish();
+            startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
 
     private void getJsonInfo() {
-        Jsonparserweather hand = new Jsonparserweather();
 
-        // Making a request to url and getting response
-        hand.makeServiceCall(finishedstring);
-        while (Jsonparserweather.isdoneconn != true) ;
+        Thread mThread = new Thread()
+        {
+          @Override
+            public void run()
+          {
+              Jsonparserweather hand = new Jsonparserweather();
 
-        try {
-            Thread.sleep(1500);
-        } catch (Exception C) {
-            C.printStackTrace();
-        }
-        String jsonStr = Jsonparserweather.response;
-
-
-        Log.e(TAG, "Response from url: " + jsonStr);
-
-        if (jsonStr != null) {
-            try {
-                JSONObject jsonObj = new JSONObject(jsonStr);
-
-                String key = jsonObj.getString("key");
-                //google weather youtube
-                if (key.equals("weather"))
-                {
-                    weatherhash.clear();
-                    // Getting JSON Array node
-                    JSONArray jsonArray = jsonObj.getJSONArray("results");
-                    String city = jsonObj.getString("city");
-                    String state = jsonObj.getString("state");
+              // Making a request to url and getting response
+              hand.makeServiceCall(finishedstring);
+              while (Jsonparserweather.isdoneconn != true) ;
 
 
-                    // looping through All Contacts
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject inside = jsonArray.getJSONObject(i);
-                        String temp_highf = inside.getString("temp_highf");
-                        String temp_highc = inside.getString("temp_highc");
-                        String humidity = inside.getString("humidity");
-                        String precip = inside.getString("precip");
-                        String condition = inside.getString("condition");
-                        String picurl = inside.getString("url");
-                        String temp_lowf = inside.getString("temp_lowf");
-                        String stringdate = inside.getString("day") + ":" + inside.getString("month") + ":" + inside.getString("year");
-                        SimpleDateFormat regularDateFormat = new SimpleDateFormat("dd:MM:yyyy");
-                        String days = "";
+              //region DO NOT LOOK I WARNED YOU
+              try {
+                  Thread.sleep(1500);
+              } catch (Exception C) {
+                  C.printStackTrace();
+              }
+              //I WARNED YOU!
+              //endregion
 
-                        try{
-                            Date date = regularDateFormat.parse(stringdate);
-                            Calendar calendar = Calendar.getInstance();
-                            calendar.setTime(date);
-                            int day = calendar.get(Calendar.DAY_OF_WEEK);
-                            if (day == Calendar.MONDAY)
-                            {
-                                days = "Monday";
+              String jsonStr = Jsonparserweather.response;
 
-                            }
-                            else if (day == Calendar.TUESDAY)
-                            {
-                                days = "Tuesday";
+              Log.e(TAG, "Response from url: " + jsonStr);
 
-                            }
-                            else if (day == Calendar.WEDNESDAY)
-                            {
-                                days = "Wednesday";
+              if (jsonStr != null) {
+                  try {
+                      JSONObject jsonObj = new JSONObject(jsonStr);
 
-                            }
-                            else if (day == Calendar.THURSDAY)
-                            {
-                                days = "Thursday";
-
-                            }
-                            else if (day == Calendar.FRIDAY)
-                            {
-                                days = "Friday";
-
-                            }
-                            else if (day == Calendar.SATURDAY)
-                            {
-                                days = "Saturday";
-
-                            }
-                            else if (day == Calendar.SUNDAY)
-                            {
-                                days = "Sunday";
-
-                            }
-                        } catch (Exception e)
-                        {
-                            Log.d(TAG,"Exception: " + e);
-                        }
-
-                        HashMap<String, String> weather = new HashMap<>();
-                        weather.put("day", days);
-                        weather.put("key", key);
-                        weather.put("temp_highf", temp_highf);
-                        weather.put("temp_highc", temp_highc);
-                        weather.put("temp_lowf", temp_lowf);
-                        weather.put("city", city);
-                        weather.put("state", state);
-                        weather.put("humidity", humidity);
-                        weather.put("precip", precip);
-                        weather.put("condition", condition);
-                        weather.put("picurl", picurl);
-                        weatherhash.add(weather);
-                    }
-                    Intent intent = new Intent(Homescreen_nav.this, weather.class);
-                    intent.putExtra("wsearch", weatherhash);
-                    startActivity(intent);
+                      String key = jsonObj.getString("key");
+                      //checking the key to get the correct information from the json
+                      if (key.equals("weather"))
+                      {
+                          weatherhash.clear();
+                          // Getting JSON Array node
+                          JSONArray jsonArray = jsonObj.getJSONArray("results");
+                          String city = jsonObj.getString("city");
+                          String state = jsonObj.getString("state");
 
 
-                }
-                else if (key.equals("google"))
-                {
-                    JSONArray jsonArray = jsonObj.getJSONArray("results");
-                    searchlist.clear();
+                          // looping through All Contacts
+                          for (int i = 0; i < jsonArray.length(); i++) {
+                              JSONObject inside = jsonArray.getJSONObject(i);
+                              String temp_highf = inside.getString("temp_highf");
+                              String temp_highc = inside.getString("temp_highc");
+                              String humidity = inside.getString("humidity");
+                              String precip = inside.getString("precip");
+                              String condition = inside.getString("condition");
+                              String picurl = inside.getString("url");
+                              String temp_lowf = inside.getString("temp_lowf");
+                              //converting stringdate into a date
+                              String stringdate = inside.getString("day") + ":" + inside.getString("month") + ":" + inside.getString("year");
+                              SimpleDateFormat regularDateFormat = new SimpleDateFormat("dd:MM:yyyy");
+                              String days = "";
 
-                    for(int i=0; i< jsonArray.length(); i++)
-                    {
-                        JSONObject inside = jsonArray.getJSONObject(i);
-                        String title = inside.getString("title");
-                        String snippet = inside.getString("snippet");
-                        String url = inside.getString("url");
-                        searchlist.add(title);
-                        searchlist.add(snippet);
-                        searchlist.add(url);
-                    }
-                    Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
-                    intent.putExtra("gsearch", searchlist);
-                    startActivity(intent);
-                }
-                else if (key.equals("youtube"))
-                {
-                    String id = jsonObj.getString("id");
-                    hashjson.clear();
-                    hashjson.put("id", id);
-                    Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
-                    intent.putExtra("search", (Serializable) hashjson);
-                    startActivity(intent);
-                }
+                              try{
+                                  Date date = regularDateFormat.parse(stringdate);
+                                  Calendar calendar = Calendar.getInstance();
+                                  calendar.setTime(date);
+                                  int day = calendar.get(Calendar.DAY_OF_WEEK);
+                                  if (day == Calendar.MONDAY)
+                                  {
+                                      days = "Monday";
+
+                                  }
+                                  else if (day == Calendar.TUESDAY)
+                                  {
+                                      days = "Tuesday";
+
+                                  }
+                                  else if (day == Calendar.WEDNESDAY)
+                                  {
+                                      days = "Wednesday";
+
+                                  }
+                                  else if (day == Calendar.THURSDAY)
+                                  {
+                                      days = "Thursday";
+
+                                  }
+                                  else if (day == Calendar.FRIDAY)
+                                  {
+                                      days = "Friday";
+
+                                  }
+                                  else if (day == Calendar.SATURDAY)
+                                  {
+                                      days = "Saturday";
+
+                                  }
+                                  else if (day == Calendar.SUNDAY)
+                                  {
+                                      days = "Sunday";
+
+                                  }
+                              } catch (Exception e)
+                              {
+                                  Log.d(TAG,"Exception: " + e);
+                              }
+
+                              //temp hash map to store in the arraylist of hash maps
+                              HashMap<String, String> weather = new HashMap<>();
+                              weather.put("day", days);
+                              weather.put("key", key);
+                              weather.put("temp_highf", temp_highf);
+                              weather.put("temp_highc", temp_highc);
+                              weather.put("temp_lowf", temp_lowf);
+                              weather.put("city", city);
+                              weather.put("state", state);
+                              weather.put("humidity", humidity);
+                              weather.put("precip", precip);
+                              weather.put("condition", condition);
+                              weather.put("picurl", picurl);
+                              //adding the hash map to the arraylist
+                              weatherhash.add(weather);
+                          }
+                          //starting the correct activity based on the key
+                          Intent intent = new Intent(Homescreen_nav.this, weather.class);
+                          intent.putExtra("wsearch", weatherhash);
+                          startActivity(intent);
 
 
-            } catch (final JSONException e) {
-                Log.e(TAG, "Json parsing error: " + e.getMessage());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(),
-                                "Json parsing error: " + e.getMessage(),
-                                Toast.LENGTH_LONG)
-                                .show();
-                    }
-                });
+                      }
+                      else if (key.equals("google"))
+                      {
+                          JSONArray jsonArray = jsonObj.getJSONArray("results");
+                          searchlist.clear();
 
-            }
-        } else {
-            Log.e(TAG, "Couldn't get json from server.");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Couldn't get json from server.",
-                            Toast.LENGTH_LONG)
-                            .show();
-                }
-            });
+                          for(int i=0; i< jsonArray.length(); i++)
+                          {
+                              JSONObject inside = jsonArray.getJSONObject(i);
+                              String title = inside.getString("title");
+                              String snippet = inside.getString("snippet");
+                              String url = inside.getString("url");
+                              searchlist.add(title);
+                              searchlist.add(snippet);
+                              searchlist.add(url);
+                          }
+                          Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
+                          intent.putExtra("gsearch", searchlist);
+                          startActivity(intent);
+                      }
+                      else if (key.equals("youtube"))
+                      {
+                          String id = jsonObj.getString("id");
+                          hashjson.clear();
+                          hashjson.put("id", id);
+                          Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
+                          intent.putExtra("search", (Serializable) hashjson);
+                          startActivity(intent);
+                      }
 
-        }
-    progress.dismiss();
+
+                  } catch (final JSONException e) {
+                      Log.e(TAG, "Json parsing error: " + e.getMessage());
+                      runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              Toast.makeText(getApplicationContext(),
+                                      "Json parsing error: " + e.getMessage(),
+                                      Toast.LENGTH_LONG)
+                                      .show();
+                          }
+                      });
+
+                  }
+              } else {
+                  Log.e(TAG, "Couldn't get json from server.");
+                  runOnUiThread(new Runnable() {
+                      @Override
+                      public void run() {
+                          Toast.makeText(getApplicationContext(),
+                                  "Couldn't get json from server.",
+                                  Toast.LENGTH_LONG)
+                                  .show();
+                      }
+                  });
+
+              }
+              progress.dismiss();
+          }
+        };
+        mThread.start();
+
 
     }
 
@@ -646,6 +796,7 @@ public class Homescreen_nav extends AppCompatActivity {
         RecognitionListener listener = new RecognitionListener() {
             @Override
             public void onResults(Bundle results) {
+                progress.setTitle("Please wait");
                 progress.show();
 
                 ArrayList<String> voiceResults = results
