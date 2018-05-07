@@ -63,7 +63,7 @@ public class home extends WearableActivity implements
         //mVoice = (TextView) findViewById(R.id.voiceInput);
         //mStart = (Button) findViewById(R.id.startTalk);
         //mMessage = (TextView) findViewById(R.id.message);
-        //mUpdate = (Button) findViewById(R.id.updateBtn);
+        mUpdate = (Button) findViewById(R.id.updateBtn);
         googleclient = new GoogleApiClient.Builder(this.getApplicationContext())
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
@@ -92,21 +92,21 @@ public class home extends WearableActivity implements
                     1);
         }
 
-        mStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        //mStart.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
 
-                mStart.setEnabled(false);
-                mStart.post(new Runnable() {
-                    @Override
-                    public void run() {
+        //        mStart.setEnabled(false);
+        //        mStart.post(new Runnable() {
+        //            @Override
+        //            public void run() {
 
-                        voiceReconize();
-                        mStart.setEnabled(true);
-                    }
-                });
-            }
-        });
+        //                voiceReconize();
+        //                mStart.setEnabled(true);
+        //            }
+        //        });
+        //    }
+        //});
         // Enables Always-on
         setAmbientEnabled();
     }

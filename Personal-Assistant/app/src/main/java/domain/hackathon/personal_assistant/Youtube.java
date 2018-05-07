@@ -66,7 +66,7 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
                     }
                     videosearch = "play_" + texttosearch;
                     finishedurlstring = "";
-                    finishedurlstring = searchurl + videosearch + "/key" + "/Youtube";
+                    finishedurlstring = searchurl + videosearch + "/key" + "/Youtube/yes";
                     getYoutubeJson();
 
                     if (!isplaying)

@@ -3,14 +3,18 @@ package domain.hackathon.personal_assistant;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewTreeObserver;
@@ -27,8 +31,10 @@ public class notesActivity extends AppCompatActivity {
     View rootLayout;
     private int revealX;
     private int revealY;
-    List<String> list;
+    static List<String> list;
+    static List<String> listname;
     RecyclerView reclist;
+    static int pos;
 
 
     @Override
@@ -63,14 +69,22 @@ public class notesActivity extends AppCompatActivity {
         }
 
         reclist = (RecyclerView) findViewById(R.id.Reclist);
+        Intent recintent = getIntent();
+        if (recintent.hasExtra("add"))
+        {
+            list.add(intent.getStringExtra("add"));
+            listname.add(intent.getStringExtra("addname"));
+        }
+        else if (recintent.hasExtra("replace"))
+        {
+            list.set(pos, recintent.getStringExtra("replace"));
 
-        list = new ArrayList<String>();
-        list.add("This is a list");
-        list.add("This is line 2 of the list");
-        list.add("Shopping list can go here");
-        list.add("Anything else can go here");
-        list.add("Literally anything you want");
-        list.add("Yes, anything");
+        }
+        else if (list == null) {
+            list = new ArrayList<String>();
+        }
+
+
 
         mAdapter = new recAdapter(list);
         mLayoutManager = new LinearLayoutManager(this);
@@ -78,6 +92,53 @@ public class notesActivity extends AppCompatActivity {
         reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         reclist.setItemAnimator(new DefaultItemAnimator());
         reclist.setAdapter(mAdapter);
+        reclist.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(notesActivity.this, new GestureDetector.SimpleOnGestureListener() {
+
+                @Override public boolean onSingleTapUp(MotionEvent motionEvent) {
+
+                    return true;
+                }
+
+            });
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                View ChildView ;
+
+                ChildView = rv.findChildViewUnder(e.getX(), e.getY());
+
+                if(ChildView != null && gestureDetector.onTouchEvent(e)) {
+
+                    pos = rv.getChildAdapterPosition(ChildView);
+                    Intent sendintent = new Intent(notesActivity.this, addNote.class);
+                    sendintent.putExtra("listtoedit", list.get(pos));
+                    finish();
+                    startActivity(sendintent);
+                }
+
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
+
+        FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fablist);
+        myFab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Intent intent = new Intent(notesActivity.this, addNote.class);
+                finish();
+                startActivity(intent);
+            }
+        });
     }
 
     protected void revealActivity(int x, int y) {

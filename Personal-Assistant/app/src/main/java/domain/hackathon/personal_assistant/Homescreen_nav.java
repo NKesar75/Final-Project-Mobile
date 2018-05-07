@@ -227,7 +227,7 @@ public class Homescreen_nav extends AppCompatActivity
 
         FloatingActionButton voice = (FloatingActionButton) findViewById(R.id.fabvoice);
         getLocation();
-        finishedstring = PythonApiUrl + "/weather" + "/" + state + "/" + city;
+        finishedstring = PythonApiUrl + "/weather" + "/" + state + "/" + city + "/yes";
 
         //getJsonInfo();
         //updateweatherview();
@@ -808,7 +808,7 @@ public class Homescreen_nav extends AppCompatActivity
                     voiceresult = voiceresult.replace(" ", "_");
                 }
                 finishedstring = "";
-                finishedstring = PythonApiUrl + "/" + voiceresult + "/" + state + "/" + city;
+                finishedstring = PythonApiUrl + "/" + voiceresult + "/" + state + "/" + city + "/yes";
                 getJsonInfo();
                 //updateweatherview();
 

@@ -65,7 +65,7 @@ public class GoogleSearch extends AppCompatActivity {
         else
         {
             search = "search_for_people";
-            finishedurlstring = searchurl + search + "/key" + "/Google";
+            finishedurlstring = searchurl + search + "/key" + "/Google/yes";
             getGoogleJson();
         }
 
