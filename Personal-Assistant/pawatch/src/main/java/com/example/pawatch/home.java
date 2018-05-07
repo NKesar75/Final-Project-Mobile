@@ -63,7 +63,7 @@ public class home extends WearableActivity implements
         //mVoice = (TextView) findViewById(R.id.voiceInput);
         //mStart = (Button) findViewById(R.id.startTalk);
         //mMessage = (TextView) findViewById(R.id.message);
-        //mUpdate = (Button) findViewById(R.id.updateBtn);
+        mUpdate = (Button) findViewById(R.id.updateBtn);
         googleclient = new GoogleApiClient.Builder(this.getApplicationContext())
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
@@ -92,21 +92,21 @@ public class home extends WearableActivity implements
                     1);
         }
 
-        mStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                mStart.setEnabled(false);
-                mStart.post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        voiceReconize();
-                        mStart.setEnabled(true);
-                    }
-                });
-            }
-        });
+//        mStart.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                mStart.setEnabled(false);
+//                mStart.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        voiceReconize();
+//                        mStart.setEnabled(true);
+//                    }
+//                });
+//            }
+//        });
         // Enables Always-on
         setAmbientEnabled();
     }
@@ -173,8 +173,6 @@ public class home extends WearableActivity implements
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
-                "personal_assistant.hackathon.domain.final_project_awatch");
 
         SpeechRecognizer recognizer = SpeechRecognizer
                 .createSpeechRecognizer(this.getApplicationContext());
