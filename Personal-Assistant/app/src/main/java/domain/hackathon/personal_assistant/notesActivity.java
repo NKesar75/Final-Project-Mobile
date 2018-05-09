@@ -99,16 +99,7 @@ public class notesActivity extends AppCompatActivity {
         }
 
         reclist = (RecyclerView) findViewById(R.id.Reclist);
-        Intent recintent = getIntent();
-        //if (recintent.hasExtra("add")) {
-        //    list.clear();
-        //    listname.clear();
-        //    list.add(intent.getStringExtra("add"));
-        //    listname.add(intent.getStringExtra("addname"));
-        //}
-        //else if (recintent.hasExtra("replace")) {
-        //    list.set(pos, recintent.getStringExtra("replace"));
-        //}
+
         list = new ArrayList<String>();
         listname = new ArrayList<String>();
 
@@ -126,7 +117,6 @@ public class notesActivity extends AppCompatActivity {
                 }
                 mAdapter.notifyDataSetChanged();
 
-                //isdone = true;
             }
 
             @Override
@@ -134,8 +124,6 @@ public class notesActivity extends AppCompatActivity {
 
             }
         });
-        //while (!isdone);
-
 
         mAdapter = new recAdapter(listname);
         mLayoutManager = new LinearLayoutManager(this);
@@ -254,23 +242,19 @@ public class notesActivity extends AppCompatActivity {
                 String line = null;
                 StringBuilder sb = new StringBuilder();
 
-
                 try {
-                    // FileReader reads text files in the default encoding.
                     FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
 
-                    // Always wrap FileReader in BufferedReader.
                     BufferedReader bufferedReader = new BufferedReader(fileReader);
 
                     while ((line = bufferedReader.readLine()) != null) {
                         sb.append(line + "\n");
-
                     }
+                    sb = sb.deleteCharAt(sb.length() - 1);
                     dis = sb.toString();
                     if (fileNameOnDevice != null)
                         fileNameOnDevice.delete();
 
-                    // Always close files.
                     bufferedReader.close();
                     Intent sendintent = new Intent(notesActivity.this, addNote.class);
                     sendintent.putExtra("listtoedit", dis);

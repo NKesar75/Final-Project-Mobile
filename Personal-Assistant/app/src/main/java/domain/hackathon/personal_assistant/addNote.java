@@ -70,27 +70,14 @@ public class addNote extends AppCompatActivity {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!add.getText().toString().equals("")) {
-
-//                    if (recintent.hasExtra("listtoedit"))
-//                    {
-//                        Intent intent = new Intent(addNote.this, notesActivity.class);
-//                        intent.putExtra("replace", add.getText().toString());
-//                        finish();
-//                        startActivity(intent);
-//                    }
-                    //else {
+                if (!add.getText().toString().equals(""))
+                {
                     Intent intent = new Intent(addNote.this, notesActivity.class);
-                    //intent.putExtra("add", add.getText().toString());
-                    //intent.putExtra("addname", name.getText().toString());
-
 
                     uploadfile();
 
                     finish();
                     startActivity(intent);
-                    //}
-
                 }
             }
         });
@@ -106,10 +93,8 @@ public class addNote extends AppCompatActivity {
             outputStreamWriter.close();
 
 
-            // /data/user/0/domain.hackathon.personal_assistant/files/filetoupload.txt
             Uri urifile = Uri.fromFile(new File("/data/user/0/domain.hackathon.personal_assistant/files/filetoupload.txt"));
             StorageMetadata metadata = new StorageMetadata.Builder().setContentType("Text/Plain").build();
-            //Uri file = Uri.fromFile(File.createTempFile("/data/user/0/domain.hackathon.personal_assistant/files/filetoupload","txt"));
             StorageReference riversRef = storageRef.child("text-files/").child(auth.getCurrentUser().getUid().toString()).child(name.getText().toString() + ".txt");
             riversRef.putFile(urifile, metadata).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
@@ -126,40 +111,10 @@ public class addNote extends AppCompatActivity {
                 }
             });
         } catch (IOException e) {
+            Log.d("addNote", "File exception" + e);
 
         }
 
-    }
-
-    void readfile() {
-
-        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(name.getText().toString());
-        final File fileNameOnDevice = new File("/data/user/0/domain.hackathon.personal_assistant/files/dlfile.txt");
-        dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                String line = null;
-
-                try {
-                    // FileReader reads text files in the default encoding.
-                    FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
-
-                    // Always wrap FileReader in BufferedReader.
-                    BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-                    while ((line = bufferedReader.readLine()) != null) {
-                        String[] parts = line.split("\n");
-                        name.setText(parts[0]);
-                        add.setText(parts[1]);
-                    }
-
-                    // Always close files.
-                    bufferedReader.close();
-                } catch (Exception ex) {
-
-                }
-            }
-        });
     }
 
 }
