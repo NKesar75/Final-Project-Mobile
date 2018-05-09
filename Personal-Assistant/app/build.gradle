@@ -5,6 +5,8 @@ android {
     buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "domain.hackathon.personal_assistant"
+        multiDexEnabled true
+
         minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
@@ -14,7 +16,6 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            multiDexEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

@@ -173,8 +173,6 @@ public class home extends WearableActivity implements
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
-                "personal_assistant.hackathon.domain.final_project_awatch");
 
         SpeechRecognizer recognizer = SpeechRecognizer
                 .createSpeechRecognizer(this.getApplicationContext());

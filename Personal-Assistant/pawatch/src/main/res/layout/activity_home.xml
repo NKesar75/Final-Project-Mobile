@@ -10,18 +10,27 @@
     tools:context="com.example.pawatch.home"
     tools:deviceIds="wear">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="@dimen/inner_frame_layout_padding"
         app:boxedEdges="all">
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/Message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/hello_world" />
+            android:text="@string/hello_world"
+            android:layout_centerInParent="true"/>
 
-    </FrameLayout>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/updateBtn"
+            android:layout_below="@+id/Message"
+            android:layout_centerInParent="true"
+            android:text="Update"/>
+
+    </RelativeLayout>
 </android.support.wear.widget.BoxInsetLayout>
 

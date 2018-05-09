@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -19,6 +21,22 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +50,15 @@ public class notesActivity extends AppCompatActivity {
     private int revealX;
     private int revealY;
     static List<String> list;
-    static List<String> listname;
+    List<String> listname;
     RecyclerView reclist;
-    static int pos;
+    int pos;
+    FirebaseStorage storage;
+    StorageReference storageRef;
+    DatabaseReference myRef;
+    FirebaseDatabase mFirebaseDatabase;
+    FirebaseAuth auth;
+    String dis;
 
 
     @Override
@@ -43,6 +67,12 @@ public class notesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notes);
         final Intent intent = getIntent();
         Homescreen_nav.whichlayout = "notes";
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        myRef = mFirebaseDatabase.getReference();
+        storage = FirebaseStorage.getInstance();
+
+        storageRef = storage.getReference();
+        auth = FirebaseAuth.getInstance();
 
         rootLayout = findViewById(R.id.root_layout);
 
@@ -70,23 +100,44 @@ public class notesActivity extends AppCompatActivity {
 
         reclist = (RecyclerView) findViewById(R.id.Reclist);
         Intent recintent = getIntent();
-        if (recintent.hasExtra("add"))
-        {
-            list.add(intent.getStringExtra("add"));
-            listname.add(intent.getStringExtra("addname"));
-        }
-        else if (recintent.hasExtra("replace"))
-        {
-            list.set(pos, recintent.getStringExtra("replace"));
+        //if (recintent.hasExtra("add")) {
+        //    list.clear();
+        //    listname.clear();
+        //    list.add(intent.getStringExtra("add"));
+        //    listname.add(intent.getStringExtra("addname"));
+        //}
+        //else if (recintent.hasExtra("replace")) {
+        //    list.set(pos, recintent.getStringExtra("replace"));
+        //}
+        list = new ArrayList<String>();
+        listname = new ArrayList<String>();
 
-        }
-        else if (list == null) {
-            list = new ArrayList<String>();
-        }
+        myRef = FirebaseDatabase.getInstance().getReference("users").child(auth.getCurrentUser().getUid().toString()).child("list");
+
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                list.clear();
+                listname.clear();
+                String name;
+                for (DataSnapshot lists : dataSnapshot.getChildren()) {
+                    name = lists.getKey();
+                    listname.add(name);
+                }
+                mAdapter.notifyDataSetChanged();
+
+                //isdone = true;
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        //while (!isdone);
 
 
-
-        mAdapter = new recAdapter(list);
+        mAdapter = new recAdapter(listname);
         mLayoutManager = new LinearLayoutManager(this);
         reclist.setLayoutManager(mLayoutManager);
         reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
@@ -95,25 +146,26 @@ public class notesActivity extends AppCompatActivity {
         reclist.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             GestureDetector gestureDetector = new GestureDetector(notesActivity.this, new GestureDetector.SimpleOnGestureListener() {
 
-                @Override public boolean onSingleTapUp(MotionEvent motionEvent) {
+                @Override
+                public boolean onSingleTapUp(MotionEvent motionEvent) {
 
                     return true;
                 }
 
             });
+
             @Override
             public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                View ChildView ;
+                View ChildView;
 
                 ChildView = rv.findChildViewUnder(e.getX(), e.getY());
 
-                if(ChildView != null && gestureDetector.onTouchEvent(e)) {
+                if (ChildView != null && gestureDetector.onTouchEvent(e)) {
 
                     pos = rv.getChildAdapterPosition(ChildView);
-                    Intent sendintent = new Intent(notesActivity.this, addNote.class);
-                    sendintent.putExtra("listtoedit", list.get(pos));
-                    finish();
-                    startActivity(sendintent);
+                    readfile(listname.get(pos));
+
+
                 }
 
                 return false;
@@ -133,6 +185,10 @@ public class notesActivity extends AppCompatActivity {
         FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fablist);
         myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                listname.clear();
+                list.clear();
+                mAdapter.notifyDataSetChanged();
+
 
                 Intent intent = new Intent(notesActivity.this, addNote.class);
                 finish();
@@ -157,6 +213,7 @@ public class notesActivity extends AppCompatActivity {
             finish();
         }
     }
+
     protected void unRevealActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             finish();
@@ -177,11 +234,54 @@ public class notesActivity extends AppCompatActivity {
             circularReveal.start();
         }
     }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
             unRevealActivity();
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    void readfile(final String name) {
+
+        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(name + ".txt");
+
+        final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
+        dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                String line = null;
+                StringBuilder sb = new StringBuilder();
+
+
+                try {
+                    // FileReader reads text files in the default encoding.
+                    FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
+
+                    // Always wrap FileReader in BufferedReader.
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                    while ((line = bufferedReader.readLine()) != null) {
+                        sb.append(line + "\n");
+
+                    }
+                    dis = sb.toString();
+                    if (fileNameOnDevice != null)
+                        fileNameOnDevice.delete();
+
+                    // Always close files.
+                    bufferedReader.close();
+                    Intent sendintent = new Intent(notesActivity.this, addNote.class);
+                    sendintent.putExtra("listtoedit", dis);
+                    sendintent.putExtra("name", listname.get(pos));
+                    //finish();
+                    startActivity(sendintent);
+                } catch (Exception ex) {
+                    Log.d("notesActivity", "File exception " + ex);
+                }
+            }
+        });
+
     }
 }

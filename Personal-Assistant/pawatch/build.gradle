@@ -6,6 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.pawatch"
+        multiDexEnabled true
         minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
