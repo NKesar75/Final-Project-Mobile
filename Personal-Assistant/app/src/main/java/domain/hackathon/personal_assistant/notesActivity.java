@@ -2,11 +2,14 @@ package domain.hackathon.personal_assistant;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -21,7 +24,9 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -29,6 +34,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
@@ -140,6 +146,45 @@ public class notesActivity extends AppCompatActivity {
                     return true;
                 }
 
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View child  = reclist.findChildViewUnder(e.getX(), e.getY());
+                    pos = reclist.getChildAdapterPosition(child);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(notesActivity.this);
+                    builder.setTitle("Delete");
+                    builder.setMessage("Do you want to to delete " + listname.get(pos));
+                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                            ref.child(auth.getCurrentUser().getUid()).child("list").child(listname.get(pos)).removeValue();
+
+                            StorageReference deleteref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(listname.get(pos) + ".txt");
+                            deleteref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    // File deleted successfully
+                                    Toast.makeText(getApplicationContext(),"list been deleted", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    Toast.makeText(getApplicationContext(),"Failed to delete the list", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
+                    builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog do nothing
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                }
+
+
             });
 
             @Override
@@ -149,15 +194,13 @@ public class notesActivity extends AppCompatActivity {
                 ChildView = rv.findChildViewUnder(e.getX(), e.getY());
 
                 if (ChildView != null && gestureDetector.onTouchEvent(e)) {
-
                     pos = rv.getChildAdapterPosition(ChildView);
                     readfile(listname.get(pos));
-
-
                 }
 
                 return false;
             }
+
 
             @Override
             public void onTouchEvent(RecyclerView rv, MotionEvent e) {

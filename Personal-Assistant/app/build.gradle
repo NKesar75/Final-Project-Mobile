@@ -6,7 +6,6 @@ android {
     defaultConfig {
         applicationId "domain.hackathon.personal_assistant"
         multiDexEnabled true
-
         minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
