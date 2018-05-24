@@ -2,6 +2,7 @@ package domain.hackathon.personal_assistant;
 
 import android.content.Context;
 import android.content.Intent;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -36,6 +37,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Calendar;
 
 public class addNote extends AppCompatActivity {
     EditText add, name;
@@ -72,6 +74,21 @@ public class addNote extends AppCompatActivity {
             public void onClick(View v) {
                 if (!add.getText().toString().equals(""))
                 {
+                    if(name.getText().toString().equals(""))
+                    {
+                        Calendar now = Calendar.getInstance();
+                        String year = Integer.toString(now.get(Calendar.YEAR));
+                        String month = Integer.toString(now.get(Calendar.MONTH) + 1); // Note: zero based
+                        String day = Integer.toString(now.get(Calendar.DAY_OF_MONTH));
+                        String hour = Integer.toString(now.get(Calendar.HOUR_OF_DAY));
+                        String minute = Integer.toString(now.get(Calendar.MINUTE));
+                        String second = Integer.toString(now.get(Calendar.SECOND));
+
+                        String date = year + "-" + month + "-" + day + "-" + hour + "-" + minute + "-" + second;
+
+
+                        name.setText(date);
+                    }
                     Intent intent = new Intent(addNote.this, notesActivity.class);
 
                     uploadfile();

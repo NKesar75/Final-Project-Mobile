@@ -25,6 +25,10 @@
             android:icon="@drawable/ic_search"
             android:title="Google Search" />
         <item
+            android:id="@+id/weatheritem"
+            android:icon="@drawable/ic_weather"
+            android:title="Weather" />
+        <item
             android:id="@+id/scheduling"
             android:icon="@drawable/ic_schedule"
             android:title="Scheduling" />

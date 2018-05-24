@@ -8,12 +8,21 @@
     tools:context="domain.hackathon.personal_assistant.weather"
     tools:showIn="@layout/activity_weather">
 
+    <EditText
+        android:id="@+id/txtweathertosearch"
+        android:hint="Search for City and Sate initial or just City"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:inputType="textPersonName"
+        android:textAlignment="center" />
+
     <TextView
         android:id="@+id/scitystate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="City and State"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/txtweathertosearch"
         android:textSize="36dp"
         android:textAlignment="center" />
     <View

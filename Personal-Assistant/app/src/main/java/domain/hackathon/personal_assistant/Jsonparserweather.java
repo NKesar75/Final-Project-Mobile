@@ -40,7 +40,7 @@ public class Jsonparserweather {
                     conn.setRequestMethod("GET");
                     conn.setDoInput(true);
                     conn.connect();
-                    // read the response
+                    //read the response
                     InputStream in = conn.getInputStream();
                     response = convertStreamToString(in);
                 } catch (Exception e) {

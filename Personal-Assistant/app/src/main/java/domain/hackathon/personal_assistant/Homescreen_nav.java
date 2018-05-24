@@ -2,7 +2,6 @@ package domain.hackathon.personal_assistant;
 
 import android.*;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,22 +10,14 @@ import android.icu.text.SimpleDateFormat;
 import android.location.Address;
 import android.location.Location;
 import android.location.LocationManager;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Environment;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
@@ -40,9 +31,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.location.Geocoder;
 import android.widget.Toast;
@@ -50,8 +38,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -61,21 +47,14 @@ import com.google.android.gms.wearable.Wearable;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.bumptech.glide.Glide;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URL;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -338,6 +317,11 @@ public class Homescreen_nav extends AppCompatActivity
 
         } else if (id == R.id.googleSearch) {
             startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
+        } else if (id == R.id.weatheritem) {
+            Intent intent = new Intent(Homescreen_nav.this, weather.class);
+            getLocation();
+            intent.putExtra("state", state);
+            startActivity(intent);
         } else if (id == R.id.scheduling) {
 
         } else if (id == R.id.settings) {
@@ -397,7 +381,6 @@ public class Homescreen_nav extends AppCompatActivity
                           String state = jsonObj.getString("state");
 
 
-                          // looping through All Contacts
                           for (int i = 0; i < jsonArray.length(); i++) {
                               JSONObject inside = jsonArray.getJSONObject(i);
                               String temp_highf = inside.getString("temp_highf");
@@ -783,6 +766,7 @@ public class Homescreen_nav extends AppCompatActivity
             }
         }
     }
+
     void voiceReconize()
     {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
