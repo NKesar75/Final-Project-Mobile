@@ -6,7 +6,6 @@ android {
     defaultConfig {
         applicationId "domain.hackathon.personal_assistant"
         multiDexEnabled true
-
         minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
@@ -22,9 +21,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.firebase:firebase-auth:11.0.4'
-    implementation 'com.google.firebase:firebase-storage:11.0.4'
-    implementation 'com.google.firebase:firebase-database:11.0.4'
+    implementation 'com.google.firebase:firebase-auth:11.8.0'
+    implementation 'com.google.firebase:firebase-storage:11.8.0'
+    implementation 'com.google.firebase:firebase-database:11.8.0'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -33,11 +32,12 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     implementation 'com.android.support:design:25.3.1'
-    implementation 'com.google.android.gms:play-services-maps:11.0.4'
+    implementation 'com.google.android.gms:play-services-maps:11.8.0'
     implementation 'com.android.support:recyclerview-v7:25.3.1'
     compile files('libs/YouTubeAndroidPlayerApi.jar')
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    implementation 'com.google.android.gms:play-services:11.0.4'
+    compile 'com.google.android.gms:play-services-wearable:11.8.0'
+    implementation 'com.google.android.gms:play-services:11.8.0'
 }
 
 

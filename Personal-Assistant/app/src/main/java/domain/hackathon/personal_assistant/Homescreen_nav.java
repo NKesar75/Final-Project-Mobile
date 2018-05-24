@@ -47,6 +47,10 @@ import android.widget.TextView;
 import android.location.Geocoder;
 import android.widget.Toast;
 
+import com.google.android.gms.awareness.state.Weather;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.MessageClient;
+
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -57,7 +61,9 @@ import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
+import com.google.android.gms.wearable.WearableListenerService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -82,10 +88,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
-public class Homescreen_nav extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+public class Homescreen_nav extends AppCompatActivity implements
+        MessageClient.OnMessageReceivedListener, DataClient.OnDataChangedListener{
+
     private FirebaseAuth auth;
     private boolean isRecording = false;
     private static MediaRecorder mediaRecorder;
@@ -112,6 +120,7 @@ public class Homescreen_nav extends AppCompatActivity
     TextView commands;
     public ProgressDialog progress;
     private String voiceresult;
+    public static final String VOICE_TRANSCRIPTION_MESSAGE_PATH = "/connection";
 
 
     private boolean permissionToRecordAccepted = false;
@@ -120,33 +129,7 @@ public class Homescreen_nav extends AppCompatActivity
     private Activity activity;
     private GoogleApiClient googleClient;
 
-    //on successful connection to play services, add data listner
-    public void onConnected(Bundle connectionHint) {
-        Wearable.DataApi.addListener(googleClient, this);
-    }
 
-    //on resuming activity, reconnect play services
-    public void onResume(){
-        super.onResume();
-        googleClient.connect();
-    }
-
-    //on suspended connection, remove play services
-    public void onConnectionSuspended(int cause) {
-        Wearable.DataApi.removeListener(googleClient, this);
-    }
-
-    //pause listener, disconnect play services
-    public void onPause(){
-        super.onPause();
-        Wearable.DataApi.removeListener(googleClient, this);
-        googleClient.disconnect();
-    }
-
-    //On failed connection to play services, remove the data listener
-    public void onConnectionFailed(ConnectionResult result) {
-        Wearable.DataApi.removeListener(googleClient, this);
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -164,6 +147,8 @@ public class Homescreen_nav extends AppCompatActivity
         }
     }
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -180,12 +165,6 @@ public class Homescreen_nav extends AppCompatActivity
 
         this.activity = this;
 
-        //data layer
-        googleClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
 
 
         weatherhash = new ArrayList<>();
@@ -219,7 +198,39 @@ public class Homescreen_nav extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                // Handle navigation view item clicks here.
+                int id = item.getItemId();
+
+                if (id == R.id.maps) {
+                    startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
+                } else if (id == R.id.youtube) {
+                    startActivity(new Intent(Homescreen_nav.this, Youtube.class));
+                } else if (id == R.id.banking) {
+
+                } else if (id == R.id.food) {
+
+                } else if (id == R.id.googleSearch) {
+                    startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
+                } else if (id == R.id.scheduling) {
+
+                } else if (id == R.id.settings) {
+
+                } else if (id == R.id.about) {
+
+                } else if (id == R.id.logout) {
+                    auth.signOut();
+                    finish();
+                    startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
+                }
+
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
         auth = FirebaseAuth.getInstance();
         audioFilePath = getExternalCacheDir().getAbsolutePath();
 
@@ -240,33 +251,21 @@ public class Homescreen_nav extends AppCompatActivity
 
 
     }
-    //watches for data item
-    public void onDataChanged(DataEventBuffer dataEvents) {
-        Log.d(TAG, "onDataChanged");
-        for(DataEvent event: dataEvents){
 
-            //data item changed
-            if(event.getType() == DataEvent.TYPE_CHANGED){
-
-                DataItem item = event.getDataItem();
-                DataMapItem dataMapItem = DataMapItem.fromDataItem(item);
-
-                if(item.getUri().getPath().equals("/apiurl")){
-
-                    Log.d("debug", "caught message passed to me by the wearable");
-
-                    String message = dataMapItem.getDataMap().getString("message");
-
-
-                    Log.d("debug", "here is the message: " + message);
-                    Toast.makeText(getApplicationContext(), "Message: " + message, Toast.LENGTH_LONG).show();
-
-
-
-                }
-            }
-        }
+    @Override
+    public void onMessageReceived(final MessageEvent messageEvent) {
+        Log.d(TAG, "Message: A message from watch was received:"
+                + messageEvent.getRequestId() + " " + messageEvent.getPath());
+        Toast.makeText(this,"You have a new Message",Toast.LENGTH_LONG).show();
+        //mDataItemListAdapter.add(new Event("Message from watch", messageEvent.toString()));
     }
+
+    @Override
+    public void onDataChanged(DataEventBuffer data){
+        Log.d(TAG, "Message: A message from watch was received from: ondatachanged");
+        Toast.makeText(this,"You have a new Message",Toast.LENGTH_LONG).show();
+    }
+
 
     public void presentActivity(View view) {
         ActivityOptionsCompat options = ActivityOptionsCompat.
@@ -320,39 +319,6 @@ public class Homescreen_nav extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.maps) {
-            startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
-        } else if (id == R.id.youtube) {
-            startActivity(new Intent(Homescreen_nav.this, Youtube.class));
-        } else if (id == R.id.banking) {
-
-        } else if (id == R.id.food) {
-
-        } else if (id == R.id.googleSearch) {
-            startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
-        } else if (id == R.id.scheduling) {
-
-        } else if (id == R.id.settings) {
-
-        } else if (id == R.id.about) {
-
-        } else if (id == R.id.logout) {
-            auth.signOut();
-            finish();
-            startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     private void getJsonInfo() {
