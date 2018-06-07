@@ -1,11 +1,14 @@
 package domain.hackathon.personal_assistant;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -21,7 +24,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.StorageReference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,9 +87,45 @@ public class GoogleSearch extends AppCompatActivity {
         reclist.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             GestureDetector gestureDetector = new GestureDetector(GoogleSearch.this, new GestureDetector.SimpleOnGestureListener() {
 
-                @Override public boolean onSingleTapUp(MotionEvent motionEvent) {
+                @Override
+                public boolean onSingleTapUp(MotionEvent motionEvent) {
 
                     return true;
+                }
+                @Override
+                public void onLongPress(MotionEvent motionEvent)
+                {
+                    View child  = reclist.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+                    int pos = reclist.getChildAdapterPosition(child);
+                    final int finalpos = pos + (pos + 1) * 2;
+                    AlertDialog.Builder builder = new AlertDialog.Builder(GoogleSearch.this);
+                    builder.setTitle("Remember");
+                    builder.setMessage("Would you like to remember this link " + searchlist.get(finalpos));
+                    builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                            String characterstorid = ".$[]#/";
+                            String key = searchlist.get(finalpos - 2);
+
+                            for (int j = 0; j < characterstorid.length(); j++)
+                            {
+                                if (key.contains(String.valueOf(characterstorid.charAt(j))))
+                                {
+                                    key = key.replace(String.valueOf(characterstorid.charAt(j)), "");
+                                }
+                            }
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                            ref.child(auth.getCurrentUser().getUid()).child("remeb").child(key).setValue("Google," + searchlist.get(finalpos));
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //do nothing
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
                 }
 
             });
@@ -115,6 +159,7 @@ public class GoogleSearch extends AppCompatActivity {
 
             }
         });
+
 
 
         auth = FirebaseAuth.getInstance();

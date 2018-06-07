@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="domain.hackathon.personal_assistant">
 
     <!--
@@ -12,6 +13,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
     <application
         android:allowBackup="true"
@@ -51,7 +53,12 @@
             android:name=".weather"
             android:label="@string/title_activity_weather"
             android:theme="@style/AppTheme" />
-        <activity android:name=".addNote"></activity>
+        <activity android:name=".addNote" />
+        <activity
+            android:name=".calender"
+            android:label="@string/title_activity_calender"
+            android:theme="@style/AppTheme" />
+        <activity android:name=".Remember"></activity>
     </application>
 
 </manifest>

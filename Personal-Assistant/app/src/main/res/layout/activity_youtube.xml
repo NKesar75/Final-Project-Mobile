@@ -24,6 +24,14 @@
         android:hint="Search"
         android:textSize="25dp" />
 
+    <Button
+        android:id="@+id/btnremember"
+        android:text="Remember"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </RelativeLayout>
 
 

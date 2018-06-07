@@ -119,6 +119,8 @@ public class addNote extends AppCompatActivity {
                     FirebaseUser user = auth.getCurrentUser();
                     String duri = taskSnapshot.getDownloadUrl().toString();
                     myRef.child("users").child(user.getUid()).child("list").child(name.getText().toString()).setValue(duri);
+
+
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

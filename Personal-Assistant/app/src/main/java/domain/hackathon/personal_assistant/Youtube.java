@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +17,10 @@ import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +39,10 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
     HashMap<String, String> searchhash;
     YouTubePlayer  mplayer;
     boolean isplaying = false;
+    Button remember;
+    FirebaseAuth auth;
+    DatabaseReference myRef;
+    FirebaseDatabase mFirebaseDatabase;
 
 
 
@@ -43,6 +52,10 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
         setContentView(R.layout.activity_youtube);
         searchhash = new HashMap<>();
         youTubeView = (YouTubePlayerView) findViewById(R.id.youtube_view);
+        remember = (Button) findViewById(R.id.btnremember);
+        auth = FirebaseAuth.getInstance();
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        myRef = mFirebaseDatabase.getReference();
         final Intent intent = getIntent();
         if (intent.hasExtra("search"))
         {
@@ -87,6 +100,36 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
         search.setOnEditorActionListener(exampleListener);
         
         //youTubeView.setVisibility(View.INVISIBLE);
+
+        remember.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                FirebaseUser user = auth.getCurrentUser();
+                String key = searchhash.get("title").toString();
+                // .
+                //$
+                //[
+                //]
+                //#
+                ///
+
+                String characterstorid = ".$[]#/";
+
+                for (int i = 0; i < characterstorid.length(); i++)
+                {
+                    if (key.contains(String.valueOf(characterstorid.charAt(i))))
+                    {
+                        key = key.replace(String.valueOf(characterstorid.charAt(i)), "");
+
+                    }
+                }
+
+                myRef.child("users").child(user.getUid()).child("remeb").child(key).setValue("Youtube," + searchhash.get("id").toString());
+
+
+            }
+        });
     }
 
 
@@ -147,8 +190,11 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
                 JSONObject jsonObj = new JSONObject(jsonStr);
 
                 String id = jsonObj.getString("id");
+                String title = jsonObj.getString("title");
+
                 searchhash.clear();
                 searchhash.put("id", id);
+                searchhash.put("title", title);
 
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());

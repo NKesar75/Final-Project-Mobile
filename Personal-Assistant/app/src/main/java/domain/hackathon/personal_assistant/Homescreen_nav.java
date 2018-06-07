@@ -10,12 +10,15 @@ import android.icu.text.SimpleDateFormat;
 import android.location.Address;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +38,10 @@ import android.widget.TextView;
 import android.location.Geocoder;
 import android.widget.Toast;
 
+import com.google.android.gms.awareness.state.Weather;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.MessageClient;
+
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -43,10 +50,24 @@ import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
+import com.google.android.gms.wearable.WearableListenerService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.uber.sdk.android.core.Deeplink;
+import com.uber.sdk.android.core.UberSdk;
+import com.uber.sdk.android.core.auth.AccessTokenManager;
+import com.uber.sdk.android.core.auth.AuthenticationError;
+import com.uber.sdk.android.core.auth.LoginCallback;
+import com.uber.sdk.android.core.auth.LoginManager;
+import com.uber.sdk.android.rides.RideParameters;
+import com.uber.sdk.android.rides.RideRequestDeeplink;
+import com.uber.sdk.core.auth.AccessToken;
+import com.uber.sdk.core.auth.AccessTokenStorage;
+import com.uber.sdk.core.auth.Scope;
+import com.uber.sdk.core.client.SessionConfiguration;
 
 
 import org.json.JSONArray;
@@ -56,15 +77,26 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
-public class Homescreen_nav extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+import ai.api.AIListener;
+import ai.api.android.AIConfiguration;
+import ai.api.android.AIService;
+import ai.api.model.AIError;
+import ai.api.model.AIResponse;
+import ai.api.model.Result;
+import ai.api.ui.AIDialog;
+
+
+public class Homescreen_nav extends AppCompatActivity implements
+        MessageClient.OnMessageReceivedListener, DataClient.OnDataChangedListener, AIListener {
+
     private FirebaseAuth auth;
     private boolean isRecording = false;
     private static MediaRecorder mediaRecorder;
@@ -91,6 +123,7 @@ public class Homescreen_nav extends AppCompatActivity
     TextView commands;
     public ProgressDialog progress;
     private String voiceresult;
+    public static final String VOICE_TRANSCRIPTION_MESSAGE_PATH = "/connection";
 
 
     private boolean permissionToRecordAccepted = false;
@@ -98,34 +131,10 @@ public class Homescreen_nav extends AppCompatActivity
 
     private Activity activity;
     private GoogleApiClient googleClient;
+    LoginManager loginManager;
+    AIService aiService;
+    TextToSpeech tts;
 
-    //on successful connection to play services, add data listner
-    public void onConnected(Bundle connectionHint) {
-        Wearable.DataApi.addListener(googleClient, this);
-    }
-
-    //on resuming activity, reconnect play services
-    public void onResume(){
-        super.onResume();
-        googleClient.connect();
-    }
-
-    //on suspended connection, remove play services
-    public void onConnectionSuspended(int cause) {
-        Wearable.DataApi.removeListener(googleClient, this);
-    }
-
-    //pause listener, disconnect play services
-    public void onPause(){
-        super.onPause();
-        Wearable.DataApi.removeListener(googleClient, this);
-        googleClient.disconnect();
-    }
-
-    //On failed connection to play services, remove the data listener
-    public void onConnectionFailed(ConnectionResult result) {
-        Wearable.DataApi.removeListener(googleClient, this);
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -143,6 +152,9 @@ public class Homescreen_nav extends AppCompatActivity
         }
     }
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,15 +168,24 @@ public class Homescreen_nav extends AppCompatActivity
                     new String[]{android.Manifest.permission.RECORD_AUDIO},
                     1);
         }
+        tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i != TextToSpeech.ERROR) {
+                    tts.setLanguage(Locale.US);
+                }
+            }
+        });
+
+
+
+        AIConfiguration config = new AIConfiguration("fb57e9c4edb34e31bfdd91ece7f5427c",
+                AIConfiguration.SupportedLanguages.English,
+                AIConfiguration.RecognitionEngine.System);
+        aiService = AIService.getService(getApplicationContext(), config);
+        aiService.setListener(this);
 
         this.activity = this;
-
-        //data layer
-        googleClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
 
 
         weatherhash = new ArrayList<>();
@@ -198,7 +219,46 @@ public class Homescreen_nav extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                // Handle navigation view item clicks here.
+                int id = item.getItemId();
+
+                if (id == R.id.maps) {
+                    startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
+                } else if (id == R.id.youtube) {
+                    startActivity(new Intent(Homescreen_nav.this, Youtube.class));
+                } else if (id == R.id.banking) {
+
+                } else if (id == R.id.food) {
+
+                } else if (id == R.id.weatheritem) {
+                    getLocation();
+                    Intent intent = new Intent(Homescreen_nav.this, weather.class);
+                    intent.putExtra("state", state);
+                    startActivity(intent);
+                } else if (id == R.id.googleSearch) {
+                    startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
+                } else if (id == R.id.scheduling) {
+                    startActivity(new Intent(Homescreen_nav.this, calender.class));
+                } else if (id == R.id.rememeber){
+                    startActivity(new Intent(Homescreen_nav.this, Remember.class));
+                } else if (id == R.id.settings) {
+
+                } else if (id == R.id.about) {
+
+                } else if (id == R.id.logout) {
+                    auth.signOut();
+                    finish();
+                    startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
+                }
+
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
         auth = FirebaseAuth.getInstance();
         audioFilePath = getExternalCacheDir().getAbsolutePath();
 
@@ -217,34 +277,28 @@ public class Homescreen_nav extends AppCompatActivity
             }
         });
 
+        FloatingActionButton api = (FloatingActionButton) findViewById(R.id.fabapiai);
+        api.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                aiService.startListening();
+            }
+        });
+
 
     }
-    //watches for data item
-    public void onDataChanged(DataEventBuffer dataEvents) {
-        Log.d(TAG, "onDataChanged");
-        for(DataEvent event: dataEvents){
 
-            //data item changed
-            if(event.getType() == DataEvent.TYPE_CHANGED){
+    @Override
+    public void onMessageReceived(final MessageEvent messageEvent) {
+        Log.d(TAG, "Message: A message from watch was received:"
+                + messageEvent.getRequestId() + " " + messageEvent.getPath());
+        Toast.makeText(this, "You have a new Message", Toast.LENGTH_LONG).show();
+        //mDataItemListAdapter.add(new Event("Message from watch", messageEvent.toString()));
+    }
 
-                DataItem item = event.getDataItem();
-                DataMapItem dataMapItem = DataMapItem.fromDataItem(item);
-
-                if(item.getUri().getPath().equals("/apiurl")){
-
-                    Log.d("debug", "caught message passed to me by the wearable");
-
-                    String message = dataMapItem.getDataMap().getString("message");
-
-
-                    Log.d("debug", "here is the message: " + message);
-                    Toast.makeText(getApplicationContext(), "Message: " + message, Toast.LENGTH_LONG).show();
-
-
-
-                }
-            }
-        }
+    @Override
+    public void onDataChanged(DataEventBuffer data) {
+        Log.d(TAG, "Message: A message from watch was received from: ondatachanged");
+        Toast.makeText(this, "You have a new Message", Toast.LENGTH_LONG).show();
     }
 
     public void presentActivity(View view) {
@@ -269,10 +323,20 @@ public class Homescreen_nav extends AppCompatActivity
             super.onBackPressed();
         }
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         progress.dismiss();
+    }
+
+    @Override
+    public void onPause(){
+        if(tts !=null){
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onPause();
     }
 
     @Override
@@ -301,226 +365,166 @@ public class Homescreen_nav extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.maps) {
-            startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
-        } else if (id == R.id.youtube) {
-            startActivity(new Intent(Homescreen_nav.this, Youtube.class));
-        } else if (id == R.id.banking) {
-
-        } else if (id == R.id.food) {
-
-        } else if (id == R.id.googleSearch) {
-            startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
-        } else if (id == R.id.weatheritem) {
-            Intent intent = new Intent(Homescreen_nav.this, weather.class);
-            getLocation();
-            intent.putExtra("state", state);
-            startActivity(intent);
-        } else if (id == R.id.scheduling) {
-
-        } else if (id == R.id.settings) {
-
-        } else if (id == R.id.about) {
-
-        } else if (id == R.id.logout) {
-            auth.signOut();
-            finish();
-            startActivity(new Intent(Homescreen_nav.this, MainActivity.class));
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
     private void getJsonInfo() {
 
-        Thread mThread = new Thread()
-        {
-          @Override
-            public void run()
-          {
-              Jsonparserweather hand = new Jsonparserweather();
+        Thread mThread = new Thread() {
+            @Override
+            public void run() {
+                Jsonparserweather hand = new Jsonparserweather();
 
-              // Making a request to url and getting response
-              hand.makeServiceCall(finishedstring);
-              while (Jsonparserweather.isdoneconn != true) ;
+                // Making a request to url and getting response
+                hand.makeServiceCall(finishedstring);
+                while (Jsonparserweather.isdoneconn != true) ;
 
 
-              //region DO NOT LOOK I WARNED YOU
-              try {
-                  Thread.sleep(1500);
-              } catch (Exception C) {
-                  C.printStackTrace();
-              }
-              //I WARNED YOU!
-              //endregion
+                //region DO NOT LOOK I WARNED YOU
+                try {
+                    Thread.sleep(1500);
+                } catch (Exception C) {
+                    C.printStackTrace();
+                }
+                //I WARNED YOU!
+                //endregion
 
-              String jsonStr = Jsonparserweather.response;
+                String jsonStr = Jsonparserweather.response;
 
-              Log.e(TAG, "Response from url: " + jsonStr);
+                Log.e(TAG, "Response from url: " + jsonStr);
 
-              if (jsonStr != null) {
-                  try {
-                      JSONObject jsonObj = new JSONObject(jsonStr);
+                if (jsonStr != null) {
+                    try {
+                        JSONObject jsonObj = new JSONObject(jsonStr);
 
-                      String key = jsonObj.getString("key");
-                      //checking the key to get the correct information from the json
-                      if (key.equals("weather"))
-                      {
-                          weatherhash.clear();
-                          // Getting JSON Array node
-                          JSONArray jsonArray = jsonObj.getJSONArray("results");
-                          String city = jsonObj.getString("city");
-                          String state = jsonObj.getString("state");
-
-
-                          for (int i = 0; i < jsonArray.length(); i++) {
-                              JSONObject inside = jsonArray.getJSONObject(i);
-                              String temp_highf = inside.getString("temp_highf");
-                              String temp_highc = inside.getString("temp_highc");
-                              String humidity = inside.getString("humidity");
-                              String precip = inside.getString("precip");
-                              String condition = inside.getString("condition");
-                              String picurl = inside.getString("url");
-                              String temp_lowf = inside.getString("temp_lowf");
-                              //converting stringdate into a date
-                              String stringdate = inside.getString("day") + ":" + inside.getString("month") + ":" + inside.getString("year");
-                              SimpleDateFormat regularDateFormat = new SimpleDateFormat("dd:MM:yyyy");
-                              String days = "";
-
-                              try{
-                                  Date date = regularDateFormat.parse(stringdate);
-                                  Calendar calendar = Calendar.getInstance();
-                                  calendar.setTime(date);
-                                  int day = calendar.get(Calendar.DAY_OF_WEEK);
-                                  if (day == Calendar.MONDAY)
-                                  {
-                                      days = "Monday";
-
-                                  }
-                                  else if (day == Calendar.TUESDAY)
-                                  {
-                                      days = "Tuesday";
-
-                                  }
-                                  else if (day == Calendar.WEDNESDAY)
-                                  {
-                                      days = "Wednesday";
-
-                                  }
-                                  else if (day == Calendar.THURSDAY)
-                                  {
-                                      days = "Thursday";
-
-                                  }
-                                  else if (day == Calendar.FRIDAY)
-                                  {
-                                      days = "Friday";
-
-                                  }
-                                  else if (day == Calendar.SATURDAY)
-                                  {
-                                      days = "Saturday";
-
-                                  }
-                                  else if (day == Calendar.SUNDAY)
-                                  {
-                                      days = "Sunday";
-
-                                  }
-                              } catch (Exception e)
-                              {
-                                  Log.d(TAG,"Exception: " + e);
-                              }
-
-                              //temp hash map to store in the arraylist of hash maps
-                              HashMap<String, String> weather = new HashMap<>();
-                              weather.put("day", days);
-                              weather.put("key", key);
-                              weather.put("temp_highf", temp_highf);
-                              weather.put("temp_highc", temp_highc);
-                              weather.put("temp_lowf", temp_lowf);
-                              weather.put("city", city);
-                              weather.put("state", state);
-                              weather.put("humidity", humidity);
-                              weather.put("precip", precip);
-                              weather.put("condition", condition);
-                              weather.put("picurl", picurl);
-                              //adding the hash map to the arraylist
-                              weatherhash.add(weather);
-                          }
-                          //starting the correct activity based on the key
-                          Intent intent = new Intent(Homescreen_nav.this, weather.class);
-                          intent.putExtra("wsearch", weatherhash);
-                          startActivity(intent);
+                        String key = jsonObj.getString("key");
+                        //checking the key to get the correct information from the json
+                        if (key.equals("weather")) {
+                            weatherhash.clear();
+                            // Getting JSON Array node
+                            JSONArray jsonArray = jsonObj.getJSONArray("results");
+                            String city = jsonObj.getString("city");
+                            String state = jsonObj.getString("state");
 
 
-                      }
-                      else if (key.equals("google"))
-                      {
-                          JSONArray jsonArray = jsonObj.getJSONArray("results");
-                          searchlist.clear();
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject inside = jsonArray.getJSONObject(i);
+                                String temp_highf = inside.getString("temp_highf");
+                                String temp_highc = inside.getString("temp_highc");
+                                String humidity = inside.getString("humidity");
+                                String precip = inside.getString("precip");
+                                String condition = inside.getString("condition");
+                                String picurl = inside.getString("url");
+                                String temp_lowf = inside.getString("temp_lowf");
+                                //converting stringdate into a date
+                                String stringdate = inside.getString("day") + ":" + inside.getString("month") + ":" + inside.getString("year");
+                                SimpleDateFormat regularDateFormat = new SimpleDateFormat("dd:MM:yyyy");
+                                String days = "";
 
-                          for(int i=0; i< jsonArray.length(); i++)
-                          {
-                              JSONObject inside = jsonArray.getJSONObject(i);
-                              String title = inside.getString("title");
-                              String snippet = inside.getString("snippet");
-                              String url = inside.getString("url");
-                              searchlist.add(title);
-                              searchlist.add(snippet);
-                              searchlist.add(url);
-                          }
-                          Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
-                          intent.putExtra("gsearch", searchlist);
-                          startActivity(intent);
-                      }
-                      else if (key.equals("youtube"))
-                      {
-                          String id = jsonObj.getString("id");
-                          hashjson.clear();
-                          hashjson.put("id", id);
-                          Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
-                          intent.putExtra("search", (Serializable) hashjson);
-                          startActivity(intent);
-                      }
+                                try {
+                                    Date date = regularDateFormat.parse(stringdate);
+                                    Calendar calendar = Calendar.getInstance();
+                                    calendar.setTime(date);
+                                    int day = calendar.get(Calendar.DAY_OF_WEEK);
+                                    if (day == Calendar.MONDAY) {
+                                        days = "Monday";
+
+                                    } else if (day == Calendar.TUESDAY) {
+                                        days = "Tuesday";
+
+                                    } else if (day == Calendar.WEDNESDAY) {
+                                        days = "Wednesday";
+
+                                    } else if (day == Calendar.THURSDAY) {
+                                        days = "Thursday";
+
+                                    } else if (day == Calendar.FRIDAY) {
+                                        days = "Friday";
+
+                                    } else if (day == Calendar.SATURDAY) {
+                                        days = "Saturday";
+
+                                    } else if (day == Calendar.SUNDAY) {
+                                        days = "Sunday";
+
+                                    }
+                                } catch (Exception e) {
+                                    Log.d(TAG, "Exception: " + e);
+                                }
+
+                                //temp hash map to store in the arraylist of hash maps
+                                HashMap<String, String> weather = new HashMap<>();
+                                weather.put("day", days);
+                                weather.put("key", key);
+                                weather.put("temp_highf", temp_highf);
+                                weather.put("temp_highc", temp_highc);
+                                weather.put("temp_lowf", temp_lowf);
+                                weather.put("city", city);
+                                weather.put("state", state);
+                                weather.put("humidity", humidity);
+                                weather.put("precip", precip);
+                                weather.put("condition", condition);
+                                weather.put("picurl", picurl);
+                                //adding the hash map to the arraylist
+                                weatherhash.add(weather);
+                            }
+                            //starting the correct activity based on the key
+                            Intent intent = new Intent(Homescreen_nav.this, weather.class);
+                            intent.putExtra("wsearch", weatherhash);
+                            startActivity(intent);
 
 
-                  } catch (final JSONException e) {
-                      Log.e(TAG, "Json parsing error: " + e.getMessage());
-                      runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              Toast.makeText(getApplicationContext(),
-                                      "Json parsing error: " + e.getMessage(),
-                                      Toast.LENGTH_LONG)
-                                      .show();
-                          }
-                      });
+                        } else if (key.equals("google")) {
+                            JSONArray jsonArray = jsonObj.getJSONArray("results");
+                            searchlist.clear();
 
-                  }
-              } else {
-                  Log.e(TAG, "Couldn't get json from server.");
-                  runOnUiThread(new Runnable() {
-                      @Override
-                      public void run() {
-                          Toast.makeText(getApplicationContext(),
-                                  "Couldn't get json from server.",
-                                  Toast.LENGTH_LONG)
-                                  .show();
-                      }
-                  });
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject inside = jsonArray.getJSONObject(i);
+                                String title = inside.getString("title");
+                                String snippet = inside.getString("snippet");
+                                String url = inside.getString("url");
+                                searchlist.add(title);
+                                searchlist.add(snippet);
+                                searchlist.add(url);
+                            }
+                            Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
+                            intent.putExtra("gsearch", searchlist);
+                            startActivity(intent);
+                        } else if (key.equals("youtube")) {
+                            String id = jsonObj.getString("id");
+                            hashjson.clear();
+                            hashjson.put("id", id);
+                            Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
+                            intent.putExtra("search", (Serializable) hashjson);
+                            startActivity(intent);
+                        }
 
-              }
-              progress.dismiss();
-          }
+
+                    } catch (final JSONException e) {
+                        Log.e(TAG, "Json parsing error: " + e.getMessage());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        "Json parsing error: " + e.getMessage(),
+                                        Toast.LENGTH_LONG)
+                                        .show();
+                            }
+                        });
+
+                    }
+                } else {
+                    Log.e(TAG, "Couldn't get json from server.");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Couldn't get json from server.",
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
+                    });
+
+                }
+                progress.dismiss();
+            }
         };
         mThread.start();
 
@@ -767,8 +771,7 @@ public class Homescreen_nav extends AppCompatActivity
         }
     }
 
-    void voiceReconize()
-    {
+    void voiceReconize() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -787,8 +790,7 @@ public class Homescreen_nav extends AppCompatActivity
                         .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 Log.d(TAG, "Voiceresults: " + voiceResults.toString());
                 voiceresult = voiceResults.get(0);
-                if (voiceresult.contains(" "))
-                {
+                if (voiceresult.contains(" ")) {
                     voiceresult = voiceresult.replace(" ", "_");
                 }
                 finishedstring = "";
@@ -846,6 +848,57 @@ public class Homescreen_nav extends AppCompatActivity
         };
         recognizer.setRecognitionListener(listener);
         recognizer.startListening(intent);
+
+    }
+
+    @Override
+    public void onResult(AIResponse result) {
+        Result info = result.getResult();
+        Log.d(TAG, "api info " + info);
+        Log.d(TAG, "api Query " +info.getResolvedQuery());
+        Log.d(TAG, "api result " + info.getFulfillment().getSpeech().toString());
+        //Toast.makeText(getApplicationContext(), "IT WORKED " + info.getFulfillment().getSpeech().toString(), Toast.LENGTH_LONG).show();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            Bundle bundle = new Bundle();
+            bundle.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
+            tts.speak(info.getFulfillment().getSpeech().toString(), TextToSpeech.QUEUE_FLUSH, bundle, null);
+        }
+        else{
+            HashMap<String, String> paramaters = new HashMap<>();
+            paramaters.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
+            tts.speak(info.getFulfillment().getSpeech().toString(), TextToSpeech.QUEUE_FLUSH, paramaters);
+        }
+    }
+
+    @Override
+    public void onError(AIError error) {
+        Log.d(TAG, "api error " + error.getMessage().toString());
+        Toast.makeText(getApplicationContext(), "ERROR " + error.getMessage().toString(), Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void onAudioLevel(float level) {
+
+    }
+
+    @Override
+    public void onListeningStarted() {
+        Log.d(TAG, "api started to listen");
+        Toast.makeText(getApplicationContext(), "ITS LISTENING", Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void onListeningCanceled() {
+        Log.d(TAG, "api canceled");
+
+    }
+
+    @Override
+    public void onListeningFinished() {
+        Log.d(TAG, "api stopped listening");
 
     }
 }

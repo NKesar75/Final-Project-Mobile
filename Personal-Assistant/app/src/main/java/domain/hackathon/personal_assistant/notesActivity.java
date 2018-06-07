@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -151,9 +152,9 @@ public class notesActivity extends AppCompatActivity {
                     View child  = reclist.findChildViewUnder(e.getX(), e.getY());
                     pos = reclist.getChildAdapterPosition(child);
                     AlertDialog.Builder builder = new AlertDialog.Builder(notesActivity.this);
-                    builder.setTitle("Delete");
-                    builder.setMessage("Do you want to to delete " + listname.get(pos));
-                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    builder.setTitle("Modification");
+                    builder.setMessage("what do you want to do with " + listname.get(pos));
+                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK button
                             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
@@ -172,6 +173,50 @@ public class notesActivity extends AppCompatActivity {
                                     Toast.makeText(getApplicationContext(),"Failed to delete the list", Toast.LENGTH_SHORT).show();
                                 }
                             });
+                        }
+                    });
+                    builder.setNeutralButton("Remember", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+                            DatabaseReference reflisten =  ref.child("users").child(auth.getCurrentUser().getUid()).child("list").child(listname.get(pos));
+                            reflisten.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    String key = listname.get(pos);
+                                    // .
+                                    //$
+                                    //[
+                                    //]
+                                    //#
+                                    ///
+
+                                    String characterstorid = ".$[]#/";
+                                    FirebaseUser user = auth.getCurrentUser();
+
+
+                                    for (int j = 0; j < characterstorid.length(); j++)
+                                    {
+                                        if (key.contains(String.valueOf(characterstorid.charAt(j))))
+                                        {
+                                            key = key.replace(String.valueOf(characterstorid.charAt(j)), "");
+                                        }
+                                    }
+
+                                    //DatabaseReference reftosave = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("remeb");
+                                    DatabaseReference reftosave = FirebaseDatabase.getInstance().getReference();
+
+                                    reftosave.child("users").child(user.getUid()).child("remeb").child(key).setValue("List," + dataSnapshot.getValue());
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+
                         }
                     });
                     builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {

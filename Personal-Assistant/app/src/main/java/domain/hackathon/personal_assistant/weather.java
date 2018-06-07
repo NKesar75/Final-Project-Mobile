@@ -72,14 +72,16 @@ public class weather extends AppCompatActivity {
                         weathersearch = weathersearch.replace(" ", "_");
                         //String[] parts = weathersearch.split(" ");
                         finishedurlstring = searchurl + "weather_in_" + weathersearch + "/";
+                        Log.d(TAG, finishedurlstring);
                     } else {
                         Intent intent = getIntent();
                         String state = intent.getStringExtra("state");
 
                         finishedurlstring = searchurl + "weather/" + state + "/" + weathersearch + "/";
+                        Log.d(TAG, finishedurlstring);
+
                     }
                     getJson();
-                    citystate.setText(weatherhash.get(0).get("city") + ", " + weatherhash.get(0).get("state"));
                     mAdapter.notifyDataSetChanged();
 
                 }
@@ -192,6 +194,8 @@ public class weather extends AppCompatActivity {
                     //adding the hash map to the arraylist
                     weatherhash.add(weather);
                 }
+                citystate.setText(weatherhash.get(0).get("city") + ", " + weatherhash.get(0).get("state"));
+
 
             } catch (final JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());

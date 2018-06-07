@@ -5,7 +5,7 @@ android {
 
 
     defaultConfig {
-        applicationId "com.example.pawatch"
+        applicationId "domain.hackathon.personal_assistant"
         multiDexEnabled true
         minSdkVersion 23
         targetSdkVersion 26
@@ -30,4 +30,5 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     implementation 'com.android.support:wear:26.1.0'
     compileOnly 'com.google.android.wearable:wearable:2.3.0'
+
 }

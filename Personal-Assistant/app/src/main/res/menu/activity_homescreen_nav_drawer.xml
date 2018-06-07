@@ -33,6 +33,9 @@
             android:icon="@drawable/ic_schedule"
             android:title="Scheduling" />
         <item
+            android:id="@+id/rememeber"
+            android:title="Rememeber" />
+        <item
             android:id="@+id/settings"
             android:icon="@drawable/ic_settings"
             android:title="Settings" />
