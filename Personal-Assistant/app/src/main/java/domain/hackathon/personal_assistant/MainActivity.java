@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
+                //if the user entered valid info sign the user into firebase
                 auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
                             @Override

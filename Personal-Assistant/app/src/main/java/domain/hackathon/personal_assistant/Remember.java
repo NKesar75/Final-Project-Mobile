@@ -70,11 +70,13 @@ public class Remember extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
 
+        //get the information from firebase
         myRef = FirebaseDatabase.getInstance().getReference("users").child(auth.getCurrentUser().getUid().toString()).child("remeb");
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                //clear the current data so there is no duplicates
                 rememberlist.clear();
                 parsedlisst.clear();
                 String thingtoremember;
@@ -82,12 +84,72 @@ public class Remember extends AppCompatActivity {
                     thingtoremember = lists.getKey();
                     String parse = thingtoremember + "," + lists.getValue();
                     thingtoremember = thingtoremember + "," + lists.getValue();
-
+                    //put a comma inbetween the key and the value for easier lookup later
                     rememberlist.add(thingtoremember);
 
+                    //put a new line between the list that is getting displayed so it looks nicer
+//                    String[] parts = parse.split(",");
+//                    parse = parts[0] + "\n" + parts[2];
+//                    parsedlisst.add(parse);
+                }
+
+                for (int i = 0; i < rememberlist.size(); i++){
+                    String parse = rememberlist.get(i);
                     String[] parts = parse.split(",");
-                    parse = parts[0] + "\n" + parts[2];
-                    parsedlisst.add(parse);
+                    if (parts[1].equals("Google"))
+                    {
+                        parse = "Google Search\n" + parts[0] + "\n" + parts[2];
+                        parsedlisst.add(parse);
+                    }
+                }
+                for (int i = 0; i < rememberlist.size(); i++){
+                    String parse = rememberlist.get(i);
+                    String[] parts = parse.split(",");
+                    if (parts[1].equals("Youtube"))
+                    {
+                        parse = "Youtube video\n" + parts[0] + "\n" + parts[2];
+                        parsedlisst.add(parse);
+                    }
+                }
+                for (int i = 0; i < rememberlist.size(); i++){
+                    String parse = rememberlist.get(i);
+                    String[] parts = parse.split(",");
+                    if (parts[1].equals("List"))
+                    {
+//                        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(parts[0] + ".txt");
+//
+//                        final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
+//                        dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+//                            @Override
+//                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+//                                String line = null;
+//                                StringBuilder sb = new StringBuilder();
+//                                String dis;
+//
+//                                try {
+//                                    FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
+//
+//                                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+//
+//                                    while ((line = bufferedReader.readLine()) != null) {
+//                                        sb.append(line + "\n");
+//                                    }
+//                                    sb = sb.deleteCharAt(sb.length() - 1);
+//                                    dis = sb.toString();
+//                                    if (fileNameOnDevice != null)
+//                                        fileNameOnDevice.delete();
+//
+//                                    bufferedReader.close();
+//
+//
+//                                } catch (Exception ex) {
+//                                    Log.d("notesActivity", "File exception " + ex);
+//                                }
+//                            }
+//                        });
+                        parse = "List\n" + parts[0] + "\n" + parts[2];
+                        parsedlisst.add(parse);
+                    }
                 }
                 mAdapter.notifyDataSetChanged();
 
@@ -130,6 +192,7 @@ public class Remember extends AppCompatActivity {
                     builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK button
+                            //remove the data from firebase
                             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
                             ref.child(auth.getCurrentUser().getUid()).child("remeb").child(parts[0]).removeValue();
                             mAdapter.notifyDataSetChanged();
@@ -155,21 +218,22 @@ public class Remember extends AppCompatActivity {
 
                 if (ChildView != null && gestureDetector.onTouchEvent(e)) {
                     pos = rv.getChildAdapterPosition(ChildView);
-                    String toparse = rememberlist.get(pos);
-                    final String[] parts = toparse.split(",");
-                    if (parts[1].equals("Google")) {
+                    String toparse = parsedlisst.get(pos);
+                    final String[] parts = toparse.split("\n");
+                    //start the correct activity base on what information is (google, Youtube, List)
+                    if (parts[0].equals("Google Search")) {
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse(parts[2]));
                         startActivity(browserIntent);
-                    } else if (parts[1].equals("Youtube")) {
+                    } else if (parts[0].equals("Youtube video")) {
                         HashMap<String, String> map = new HashMap<>();
                         map.put("id", parts[2]);
-                        map.put("title", parts[0]);
+                        map.put("title", parts[1]);
                         Intent intent = new Intent(Remember.this, Youtube.class);
                         intent.putExtra("search", map);
                         startActivity(intent);
-                    } else if (parts[1].equals("List")) {
-                        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(parts[0] + ".txt");
+                    } else if (parts[0].equals("List")) {
+                        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(parts[1] + ".txt");
 
                         final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
                         dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
@@ -195,7 +259,7 @@ public class Remember extends AppCompatActivity {
                                     bufferedReader.close();
                                     Intent sendintent = new Intent(Remember.this, addNote.class);
                                     sendintent.putExtra("listtoedit", dis);
-                                    sendintent.putExtra("name", parts[0]);
+                                    sendintent.putExtra("name", parts[1]);
                                     //finish();
                                     startActivity(sendintent);
                                 } catch (Exception ex) {

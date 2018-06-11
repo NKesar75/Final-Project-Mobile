@@ -47,6 +47,7 @@ public class createaccount extends AppCompatActivity {
                 String email = Email.getText().toString().trim();
                 String password = Password.getText().toString().trim();
 
+                //make sure the user clicked the button with valid information
                 if (TextUtils.isEmpty(email)) {
                     Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
                     return;
@@ -87,6 +88,7 @@ public class createaccount extends AppCompatActivity {
                     return;
                 }
 
+                //if the user entered correct information create the account
                 auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(createaccount.this, new OnCompleteListener<AuthResult>() {
                             @Override
@@ -101,6 +103,7 @@ public class createaccount extends AppCompatActivity {
                                     FirebaseUser user = auth.getCurrentUser();
                                     if (user != null)
                                     {
+                                        //sore the users information
                                         String DOB = month.getText().toString() + "/" + day.getText().toString() + "/" + year.getText().toString();
                                         myRef.child("users").child(user.getUid()).child("profile").child("dob").setValue(DOB);
                                         myRef.child("users").child(user.getUid()).child("profile").child("last_name").setValue(lastname.getText().toString());

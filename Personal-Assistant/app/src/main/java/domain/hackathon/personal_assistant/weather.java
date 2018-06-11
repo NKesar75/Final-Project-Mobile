@@ -57,6 +57,7 @@ public class weather extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent.hasExtra("wsearch")) {
+            //store the information from the intent
             weatherhash = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("wsearch");
             citystate.setText(weatherhash.get(0).get("city") + ", " + weatherhash.get(0).get("state"));
         }
@@ -107,15 +108,17 @@ public class weather extends AppCompatActivity {
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
-        hand.makeServiceCall(finishedurlstring);
-        while (Jsonparserweather.isdoneconn != true) ;
+        String jsonStr = hand.makeServiceCall(finishedurlstring);
 
-        try {
-            Thread.sleep(1000);
-        } catch (Exception C) {
-            C.printStackTrace();
-        }
-        String jsonStr = Jsonparserweather.response;
+//        hand.makeServiceCall(finishedurlstring);
+//        while (Jsonparserweather.isdoneconn != true) ;
+//
+//        try {
+//            Thread.sleep(1000);
+//        } catch (Exception C) {
+//            C.printStackTrace();
+//        }
+//        String jsonStr = Jsonparserweather.response;
 
 
         Log.e(TAG, "Response from url: " + jsonStr);

@@ -28,7 +28,9 @@ public class recAdapter extends RecyclerView.Adapter<recAdapter.ViewHolder> {
             tittle = (TextView) v.findViewById(R.id.txttittle);
             snippet = (TextView) v.findViewById(R.id.txtsnippet);
             url = (TextView) v.findViewById(R.id.txturl);
+            //uses this recaadapter for two avtivties
             if (Homescreen_nav.whichlayout == "notes"){
+                // if it is the notes activity use the ui needed for the notes activity
                 mTextView.setVisibility(View.VISIBLE);
                 tittle.setVisibility(View.INVISIBLE);
                 snippet.setVisibility(View.INVISIBLE);
@@ -44,6 +46,7 @@ public class recAdapter extends RecyclerView.Adapter<recAdapter.ViewHolder> {
             }
             else if (Homescreen_nav.whichlayout == "google")
             {
+                // if it is the google activity use the ui needed for the notes activity
                 mTextView.setVisibility(View.INVISIBLE);
                 tittle.setVisibility(View.VISIBLE);
                 snippet.setVisibility(View.VISIBLE);

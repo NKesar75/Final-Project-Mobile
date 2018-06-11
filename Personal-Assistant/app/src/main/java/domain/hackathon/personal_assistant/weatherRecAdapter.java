@@ -21,6 +21,7 @@ import java.util.List;
  */
 
 public class weatherRecAdapter extends RecyclerView.Adapter<weatherRecAdapter.ViewHolder> {
+    //It is easier to look up if store this way
     private ArrayList<HashMap<String, String>> mDataset;
     private RequestManager glide;
 

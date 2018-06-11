@@ -3,6 +3,7 @@ package domain.hackathon.personal_assistant;
 import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,8 +11,11 @@ import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -75,6 +79,7 @@ public class calender extends AppCompatActivity implements EasyPermissions.Permi
         //setSupportActionBar(toolbar);
 
 
+        //set up the layout
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -119,6 +124,23 @@ public class calender extends AppCompatActivity implements EasyPermissions.Permi
                 .setBackOff(new ExponentialBackOff());
 
         getResultsFromApi();
+
+//        Calendar cal = Calendar.getInstance();
+//        Intent intent = new Intent(Intent.ACTION_EDIT);
+//        intent.setType("vnd.android.cursor.item/event");
+//        intent.putExtra("beginTime", cal.getTimeInMillis());
+//        intent.putExtra("allDay", true);
+//        intent.putExtra("rrule", "FREQ=YEARLY");
+//        intent.putExtra("endTime", cal.getTimeInMillis()+60*60*1000);
+//        intent.putExtra("title", "A Test Event from android app");
+//        startActivity(intent);
+
+//        Uri.Builder builder = CalendarContract.CONTENT_URI.buildUpon();
+//        builder.appendPath("time");
+//        ContentUris.appendId(builder, Calendar.getInstance().getTimeInMillis());
+//        Intent intent = new Intent(Intent.ACTION_VIEW)
+//                .setData(builder.build());
+//        startActivity(intent);
 
     }
 
@@ -372,7 +394,9 @@ public class calender extends AppCompatActivity implements EasyPermissions.Permi
                 }
                 eventStrings.add(
                         String.format("%s (%s)", event.getSummary(), start));
-                Log.d("calender", "event: " + event.getSummary());
+                Log.d("calender", "event sum: " + event.getSummary());
+                Log.d("calender", "event start: " + start);
+
 
             }
             Log.d("calender", "events: " + eventStrings.toString());

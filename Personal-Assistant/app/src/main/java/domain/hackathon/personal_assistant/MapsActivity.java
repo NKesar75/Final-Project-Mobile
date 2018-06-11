@@ -84,6 +84,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            //update location
             if (location != null) {
                 mLocationManager.removeUpdates(mLocationListener);
                 addMapMarker("Current Location", "You are here", location);
@@ -121,6 +122,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         requestbtn = (Button) findViewById(R.id.btnreq);
 
 
+        //set up the config for the Uber api
         config = new SessionConfiguration.Builder()
                 .setClientId("22LI3sqhTJFtDvecVdiA-IQXNknAkp44")
                 .setServerToken("CyEx0JbSCoAoi2kvFSiS5jWugrkHIiuO3vp7jThx")
@@ -144,12 +146,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 if (gc.isPresent()) {
                     try {
+                        //clear the map of any existing points or routes
                         mMap.clear();
                         List<Address> list = gc.getFromLocationName(manualinput.getText().toString(), 1);
                         Address address = list.get(0);
                         double lat = address.getLatitude();
                         double lng = address.getLongitude();
                         Location curlocation = getCurrentLocation();
+
+                        //convert the location to latlng
                         LatLng clatlong = new LatLng(curlocation.getLatitude(), curlocation.getLongitude());
                         LatLng dlatlong = new LatLng(lat, lng);
                         Location dlocation = new Location("");
@@ -164,6 +169,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     public void onDirectionSuccess(Direction direction, String rawBody) {
                                         if (direction.getRouteList().size() > 0)
                                         {
+                                            //draw the route
                                             Route route = direction.getRouteList().get(0);
                                             Leg leg = route.getLegList().get(0);
                                             ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
@@ -181,7 +187,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         // Do something here
                                     }
                                 });
-
+                        //set the ride params for the Uber api
                         RideParameters rideParams = new RideParameters.Builder()
                                 .setProductId("a1111c8c-c720-46c3-8534-2fcdd730040d")
                                 .setPickupLocation(curlocation.getLatitude(), curlocation.getLongitude(), "Current location", "1455 Market Street, San Francisco, California")
@@ -263,10 +269,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapLongClick(LatLng point) {
         if (markertodelete != null)
             markertodelete.remove();
+        //clear the map of any existing points or routes
         mMap.clear();
-
-
-        //Toast.makeText(this, "Long click:" + point, Toast.LENGTH_SHORT).show();
 
         Location curlocation = getCurrentLocation();
         Location dlocation = new Location("");
@@ -278,6 +282,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         endlocation = dlocation.getLatitude() + "," + dlocation.getLatitude();
 
+        //set the ride params for the Uber api
         RideParameters rideParams = new RideParameters.Builder()
                 .setProductId("a1111c8c-c720-46c3-8534-2fcdd730040d")
                 .setPickupLocation(curlocation.getLatitude(), curlocation.getLongitude(), "Current location", "1455 Market Street, San Francisco, California")
@@ -317,6 +322,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         rideRequestButton.loadRideInformation();
 
 
+        //convert the location to latlng
         LatLng clatlong = new LatLng(curlocation.getLatitude(), curlocation.getLongitude());
         LatLng dlatlong = new LatLng(dlocation.getLatitude(), dlocation.getLongitude());
         GoogleDirection.withServerKey("AIzaSyDXPStB0SkGvzwAsef7OkfjyWMjoMAyIx0")
@@ -327,6 +333,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onDirectionSuccess(Direction direction, String rawBody) {
                         if (direction.getRouteList().size() > 0)
                         {
+                            //draw the route
                             Route route = direction.getRouteList().get(0);
                             Leg leg = route.getLegList().get(0);
                             ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();

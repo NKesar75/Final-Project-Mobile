@@ -67,20 +67,24 @@ public class GoogleSearch extends AppCompatActivity {
         searchhash = new HashMap<>();
 
         final Intent intent = getIntent();
+        //if the intent has the information we need no need to do another api call
         if (intent.hasExtra("gsearch"))
             //search = intent.getStringExtra("gsearch");
             searchlist = (ArrayList<String>) getIntent().getSerializableExtra("gsearch");
         else
         {
+            //intent does not have the information we need so therefore must make a api call
             search = "search_for_people";
             finishedurlstring = searchurl + search + "/key" + "/Google/yes";
             getGoogleJson();
         }
 
 
+        //set the recyclerview to an adapter
         mAdapter = new recAdapter(searchlist);
         mLayoutManager = new LinearLayoutManager(this);
         reclist.setLayoutManager(mLayoutManager);
+        //divide each group by a line
         reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         reclist.setItemAnimator(new DefaultItemAnimator());
         reclist.setAdapter(mAdapter);
@@ -95,15 +99,20 @@ public class GoogleSearch extends AppCompatActivity {
                 @Override
                 public void onLongPress(MotionEvent motionEvent)
                 {
+                    //get the pos clicked
                     View child  = reclist.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
                     int pos = reclist.getChildAdapterPosition(child);
+                    //1st in the list title
+                    //2nd snippet
+                    //3rd url <--- this is what we need
                     final int finalpos = pos + (pos + 1) * 2;
                     AlertDialog.Builder builder = new AlertDialog.Builder(GoogleSearch.this);
                     builder.setTitle("Remember");
                     builder.setMessage("Would you like to remember this link " + searchlist.get(finalpos));
                     builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            // User clicked OK button
+                            //User clicked OK button
+                            //cannot have this characters in the key value for Firebase
                             String characterstorid = ".$[]#/";
                             String key = searchlist.get(finalpos - 2);
 
@@ -114,6 +123,7 @@ public class GoogleSearch extends AppCompatActivity {
                                     key = key.replace(String.valueOf(characterstorid.charAt(j)), "");
                                 }
                             }
+                            //push the information into Firebase
                             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
                             ref.child(auth.getCurrentUser().getUid()).child("remeb").child(key).setValue("Google," + searchlist.get(finalpos));
                         }
@@ -137,10 +147,14 @@ public class GoogleSearch extends AppCompatActivity {
 
                 if(ChildView != null && gestureDetector.onTouchEvent(e)) {
                     int pos;
-
+                    //get the right information passed on the where the user clicked
                     pos = rv.getChildAdapterPosition(ChildView);
+                    //1st in the list title
+                    //2nd snippet
+                    //3rd url <--- this is what we need
                     pos = pos + (pos + 1) * 2;
 
+                    //open up the link in a browser
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW,
                             Uri.parse(searchlist.get(pos)));
                     startActivity(browserIntent);
@@ -198,15 +212,17 @@ public class GoogleSearch extends AppCompatActivity {
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
-        hand.makeServiceCall(finishedurlstring);
-        while (Jsonparserweather.isdoneconn != true) ;
+        String jsonStr = hand.makeServiceCall(finishedurlstring);
 
-        try {
-            Thread.sleep(1000);
-        } catch (Exception C) {
-            C.printStackTrace();
-        }
-        String jsonStr = Jsonparserweather.response;
+//        hand.makeServiceCall(finishedurlstring);
+//        while (Jsonparserweather.isdoneconn != true) ;
+//
+//        try {
+//            Thread.sleep(1000);
+//        } catch (Exception C) {
+//            C.printStackTrace();
+//        }
+//        String jsonStr = Jsonparserweather.response;
 
 
         Log.e(TAG, "Response from url: " + jsonStr);

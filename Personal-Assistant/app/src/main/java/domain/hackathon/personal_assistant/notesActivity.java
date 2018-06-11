@@ -83,6 +83,7 @@ public class notesActivity extends AppCompatActivity {
 
         rootLayout = findViewById(R.id.root_layout);
 
+        //if the intent has the info needed store the info needed for the animation
         if (savedInstanceState == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
                 intent.hasExtra(EXTRA_CIRCULAR_REVEAL_X) &&
                 intent.hasExtra(EXTRA_CIRCULAR_REVEAL_Y)) {
@@ -110,6 +111,7 @@ public class notesActivity extends AppCompatActivity {
         list = new ArrayList<String>();
         listname = new ArrayList<String>();
 
+        //get all the lists the user has
         myRef = FirebaseDatabase.getInstance().getReference("users").child(auth.getCurrentUser().getUid().toString()).child("list");
 
         myRef.addValueEventListener(new ValueEventListener() {
@@ -122,6 +124,7 @@ public class notesActivity extends AppCompatActivity {
                     name = lists.getKey();
                     listname.add(name);
                 }
+                //notify the adapter to display the knew data
                 mAdapter.notifyDataSetChanged();
 
             }
@@ -132,9 +135,11 @@ public class notesActivity extends AppCompatActivity {
             }
         });
 
+        //set up the adpater
         mAdapter = new recAdapter(listname);
         mLayoutManager = new LinearLayoutManager(this);
         reclist.setLayoutManager(mLayoutManager);
+        //line between each group of information
         reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         reclist.setItemAnimator(new DefaultItemAnimator());
         reclist.setAdapter(mAdapter);
@@ -157,9 +162,10 @@ public class notesActivity extends AppCompatActivity {
                     builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK button
+                            //delete the selected information from firebase
                             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
                             ref.child(auth.getCurrentUser().getUid()).child("list").child(listname.get(pos)).removeValue();
-
+                            //delete the file that was in storage
                             StorageReference deleteref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(listname.get(pos) + ".txt");
                             deleteref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
@@ -178,13 +184,14 @@ public class notesActivity extends AppCompatActivity {
                     builder.setNeutralButton("Remember", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-
+                            //save the information in the remember location in the firebase database
                             DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
                             DatabaseReference reflisten =  ref.child("users").child(auth.getCurrentUser().getUid()).child("list").child(listname.get(pos));
                             reflisten.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     String key = listname.get(pos);
+                                    //cannot have these characters in the key value in firebase
                                     // .
                                     //$
                                     //[
@@ -204,7 +211,7 @@ public class notesActivity extends AppCompatActivity {
                                         }
                                     }
 
-                                    //DatabaseReference reftosave = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("remeb");
+                                    //store the information in firebase
                                     DatabaseReference reftosave = FirebaseDatabase.getInstance().getReference();
 
                                     reftosave.child("users").child(user.getUid()).child("remeb").child(key).setValue("List," + dataSnapshot.getValue());
@@ -240,6 +247,7 @@ public class notesActivity extends AppCompatActivity {
 
                 if (ChildView != null && gestureDetector.onTouchEvent(e)) {
                     pos = rv.getChildAdapterPosition(ChildView);
+                    //read the information from the lists file the user clicked on
                     readfile(listname.get(pos));
                 }
 
@@ -261,6 +269,7 @@ public class notesActivity extends AppCompatActivity {
         FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fablist);
         myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                //make sure there is no duplicates when starting a new activity
                 listname.clear();
                 list.clear();
                 mAdapter.notifyDataSetChanged();
@@ -321,6 +330,7 @@ public class notesActivity extends AppCompatActivity {
 
     void readfile(final String name) {
 
+        //get the list file from firebase
         StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(name + ".txt");
 
         final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
@@ -335,6 +345,7 @@ public class notesActivity extends AppCompatActivity {
 
                     BufferedReader bufferedReader = new BufferedReader(fileReader);
 
+                    //loop through the file and get its information
                     while ((line = bufferedReader.readLine()) != null) {
                         sb.append(line + "\n");
                     }
@@ -344,6 +355,7 @@ public class notesActivity extends AppCompatActivity {
                         fileNameOnDevice.delete();
 
                     bufferedReader.close();
+                    //start the addnote activity with the lists information
                     Intent sendintent = new Intent(notesActivity.this, addNote.class);
                     sendintent.putExtra("listtoedit", dis);
                     sendintent.putExtra("name", listname.get(pos));

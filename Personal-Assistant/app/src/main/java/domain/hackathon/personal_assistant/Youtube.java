@@ -79,6 +79,7 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
                     }
                     videosearch = "play_" + texttosearch;
                     finishedurlstring = "";
+                    //make an api call to search for what the user imputed
                     finishedurlstring = searchurl + videosearch + "/key" + "/Youtube/yes";
                     getYoutubeJson();
 
@@ -88,6 +89,9 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
                         youTubeView.setVisibility(View.VISIBLE);
                     }
                     else {
+                        //play the video if the searchhas has information
+                        //will alwways be sub zero unless we had a queue factor
+                        //which is why it is still a hashamp
                         if (searchhash.size() > 0)
                             mplayer.loadVideo(searchhash.get("id").toString());
                     }
@@ -107,6 +111,7 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
 
                 FirebaseUser user = auth.getCurrentUser();
                 String key = searchhash.get("title").toString();
+                //cannot have this symbols
                 // .
                 //$
                 //[
@@ -139,6 +144,7 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
 
         mplayer.pause();
         if (!wasRestored) {
+            //play the video on start up if we have the id
             if (searchhash.size() > 0){
                 isplaying = true;
                 mplayer.loadVideo(searchhash.get("id").toString()); // Plays https://www.youtube.com/watch?v=fhWaJi1Hsfo
@@ -173,15 +179,17 @@ public class Youtube extends YouTubeBaseActivity implements YouTubePlayer.OnInit
         Jsonparserweather hand = new Jsonparserweather();
 
         // Making a request to url and getting response
-        hand.makeServiceCall(finishedurlstring);
-        while (Jsonparserweather.isdoneconn != true) ;
+        String jsonStr = hand.makeServiceCall(finishedurlstring);
 
-        try {
-            Thread.sleep(1000);
-        } catch (Exception C) {
-            C.printStackTrace();
-        }
-        String jsonStr = Jsonparserweather.response;
+//        hand.makeServiceCall(finishedurlstring);
+//        while (Jsonparserweather.isdoneconn != true) ;
+//
+//        try {
+//            Thread.sleep(1000);
+//        } catch (Exception C) {
+//            C.printStackTrace();
+//        }
+//        String jsonStr = Jsonparserweather.response;
 
 
         Log.e(TAG, "Response from url: " + jsonStr);

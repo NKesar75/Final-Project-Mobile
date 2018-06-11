@@ -65,6 +65,7 @@ public class addNote extends AppCompatActivity {
         storageRef = storage.getReference();
 
         if (recintent.hasExtra("listtoedit")) {
+            //if true no need to make an api call
             add.setText(recintent.getStringExtra("listtoedit"));
             name.setText(recintent.getStringExtra("name"));
         }
@@ -76,6 +77,7 @@ public class addNote extends AppCompatActivity {
                 {
                     if(name.getText().toString().equals(""))
                     {
+                        //if the user didn't give the list a name, name it as the current date
                         Calendar now = Calendar.getInstance();
                         String year = Integer.toString(now.get(Calendar.YEAR));
                         String month = Integer.toString(now.get(Calendar.MONTH) + 1); // Note: zero based
@@ -104,20 +106,24 @@ public class addNote extends AppCompatActivity {
     void uploadfile() {
 
         try {
-
+            //create the file to upload to firebase
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(getApplicationContext().openFileOutput("filetoupload.txt", Context.MODE_PRIVATE));
             outputStreamWriter.write(add.getText().toString());
             outputStreamWriter.close();
 
 
+            //get the file and convert it to a uri
             Uri urifile = Uri.fromFile(new File("/data/user/0/domain.hackathon.personal_assistant/files/filetoupload.txt"));
+            //make sure the type of the file is uploaded as a Text/Plain file type
             StorageMetadata metadata = new StorageMetadata.Builder().setContentType("Text/Plain").build();
+            //get the right reference path to upload to firebase
             StorageReference riversRef = storageRef.child("text-files/").child(auth.getCurrentUser().getUid().toString()).child(name.getText().toString() + ".txt");
             riversRef.putFile(urifile, metadata).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     FirebaseUser user = auth.getCurrentUser();
                     String duri = taskSnapshot.getDownloadUrl().toString();
+                    //sote the sotrage link so we can pull it up later
                     myRef.child("users").child(user.getUid()).child("list").child(name.getText().toString()).setValue(duri);
 
 

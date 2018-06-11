@@ -3,6 +3,7 @@ package domain.hackathon.personal_assistant;
 import android.*;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,8 +14,10 @@ import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -38,7 +41,13 @@ import android.widget.TextView;
 import android.location.Geocoder;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.awareness.state.Weather;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.MessageClient;
 
@@ -98,18 +107,12 @@ public class Homescreen_nav extends AppCompatActivity implements
         MessageClient.OnMessageReceivedListener, DataClient.OnDataChangedListener, AIListener {
 
     private FirebaseAuth auth;
-    private boolean isRecording = false;
-    private static MediaRecorder mediaRecorder;
-    private static MediaPlayer mediaPlayer;
-    private static String audioFilePath;
-    private boolean recstop = false;
     private String PythonApiUrl = "https://personalassistant-ec554.appspot.com/recognize";
     private String PythonApiUrlText = "https://personalassistant-ec554.appspot.com/recognize/text_weather";
     private String finishedstring = "";
     public static String whichlayout;
     ArrayList<String> searchlist;
     ArrayList<HashMap<String, String>> weatherhash;
-    boolean doneupload = false;
     LocationManager locationManager;
     String city;
     String state;
@@ -125,35 +128,10 @@ public class Homescreen_nav extends AppCompatActivity implements
     private String voiceresult;
     public static final String VOICE_TRANSCRIPTION_MESSAGE_PATH = "/connection";
 
+    GoogleSignInClient mGoogleSignInClient;
 
-    private boolean permissionToRecordAccepted = false;
-    private String[] permissions = {android.Manifest.permission.RECORD_AUDIO};
-
-    private Activity activity;
-    private GoogleApiClient googleClient;
-    LoginManager loginManager;
     AIService aiService;
     TextToSpeech tts;
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Recognizer initialization is a time-consuming and it involves IO,
-                // so we execute it in async task
-                //new SetupTask(this).execute();
-            } else {
-                //finish();
-            }
-        }
-    }
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,22 +155,29 @@ public class Homescreen_nav extends AppCompatActivity implements
             }
         });
 
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account == null)
+        {
+            //if account = null the user needs to sign in
+            signIn();
+        }
 
+        //set up the config for api.ai
         AIConfiguration config = new AIConfiguration("fb57e9c4edb34e31bfdd91ece7f5427c",
                 AIConfiguration.SupportedLanguages.English,
                 AIConfiguration.RecognitionEngine.System);
         aiService = AIService.getService(getApplicationContext(), config);
         aiService.setListener(this);
 
-        this.activity = this;
-
-
         weatherhash = new ArrayList<>();
 
         hashjson = new HashMap<>();
         searchlist = new ArrayList<String>();
-
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -204,7 +189,7 @@ public class Homescreen_nav extends AppCompatActivity implements
         commands.setText("Try using a command\nWhat's the weather\nWhat is the weather in\nSearch for\nPlay");
         progress = new ProgressDialog(this);
 
-
+        //start te notesactivity with the animation
         FloatingActionButton myFab = (FloatingActionButton) findViewById(R.id.fabnote);
         myFab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -235,13 +220,20 @@ public class Homescreen_nav extends AppCompatActivity implements
 
                 } else if (id == R.id.weatheritem) {
                     getLocation();
+                    //start the weather activity with the location getting passed on
                     Intent intent = new Intent(Homescreen_nav.this, weather.class);
                     intent.putExtra("state", state);
                     startActivity(intent);
                 } else if (id == R.id.googleSearch) {
                     startActivity(new Intent(Homescreen_nav.this, GoogleSearch.class));
                 } else if (id == R.id.scheduling) {
-                    startActivity(new Intent(Homescreen_nav.this, calender.class));
+                    //start Google Calender Activity
+                    Uri.Builder builder = CalendarContract.CONTENT_URI.buildUpon();
+                    builder.appendPath("time");
+                    //Set the Calender to the current time
+                    ContentUris.appendId(builder, Calendar.getInstance().getTimeInMillis());
+                    Intent intent = new Intent(Intent.ACTION_VIEW).setData(builder.build());
+                    startActivity(intent);
                 } else if (id == R.id.rememeber){
                     startActivity(new Intent(Homescreen_nav.this, Remember.class));
                 } else if (id == R.id.settings) {
@@ -260,13 +252,10 @@ public class Homescreen_nav extends AppCompatActivity implements
             }
         });
         auth = FirebaseAuth.getInstance();
-        audioFilePath = getExternalCacheDir().getAbsolutePath();
-
-        audioFilePath += "/audiorecordtest.amr";
 
         FloatingActionButton voice = (FloatingActionButton) findViewById(R.id.fabvoice);
         getLocation();
-        finishedstring = PythonApiUrl + "/weather" + "/" + state + "/" + city + "/yes";
+        //finishedstring = PythonApiUrl + "/weather" + "/" + state + "/" + city + "/yes";
 
         //getJsonInfo();
         //updateweatherview();
@@ -276,7 +265,7 @@ public class Homescreen_nav extends AppCompatActivity implements
                 voiceReconize();
             }
         });
-
+        //api.ai test
         FloatingActionButton api = (FloatingActionButton) findViewById(R.id.fabapiai);
         api.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -302,11 +291,12 @@ public class Homescreen_nav extends AppCompatActivity implements
     }
 
     public void presentActivity(View view) {
+        //start the new activity
         ActivityOptionsCompat options = ActivityOptionsCompat.
                 makeSceneTransitionAnimation(this, view, "transition");
         int revealX = (int) (view.getX() + view.getWidth() / 2);
         int revealY = (int) (view.getY() + view.getHeight() / 2);
-
+        //pass the ints needed for the animation opening up from bottom left and ending on the top right
         Intent intent = new Intent(this, notesActivity.class);
         intent.putExtra(notesActivity.EXTRA_CIRCULAR_REVEAL_X, revealX);
         intent.putExtra(notesActivity.EXTRA_CIRCULAR_REVEAL_Y, revealY);
@@ -316,6 +306,7 @@ public class Homescreen_nav extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
+        //close the drawer if the drawer is open and the back button is pressed
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -373,20 +364,20 @@ public class Homescreen_nav extends AppCompatActivity implements
                 Jsonparserweather hand = new Jsonparserweather();
 
                 // Making a request to url and getting response
-                hand.makeServiceCall(finishedstring);
-                while (Jsonparserweather.isdoneconn != true) ;
+                String jsonStr = hand.makeServiceCall(finishedstring);
+                //while (Jsonparserweather.isdoneconn != true) ;
 
 
                 //region DO NOT LOOK I WARNED YOU
-                try {
-                    Thread.sleep(1500);
-                } catch (Exception C) {
-                    C.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(1500);
+//                } catch (Exception C) {
+//                    C.printStackTrace();
+//                }
                 //I WARNED YOU!
                 //endregion
 
-                String jsonStr = Jsonparserweather.response;
+                //String jsonStr = Jsonparserweather.response;
 
                 Log.e(TAG, "Response from url: " + jsonStr);
 
@@ -404,6 +395,7 @@ public class Homescreen_nav extends AppCompatActivity implements
                             String state = jsonObj.getString("state");
 
 
+                            //loop through each day and get the information for each day
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject inside = jsonArray.getJSONObject(i);
                                 String temp_highf = inside.getString("temp_highf");
@@ -475,6 +467,7 @@ public class Homescreen_nav extends AppCompatActivity implements
                             JSONArray jsonArray = jsonObj.getJSONArray("results");
                             searchlist.clear();
 
+                            //loop through and get each title, url and snippet of each result from the google search
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject inside = jsonArray.getJSONObject(i);
                                 String title = inside.getString("title");
@@ -484,13 +477,16 @@ public class Homescreen_nav extends AppCompatActivity implements
                                 searchlist.add(snippet);
                                 searchlist.add(url);
                             }
+                            //start the googlesearch activity with the information needed
                             Intent intent = new Intent(Homescreen_nav.this, GoogleSearch.class);
                             intent.putExtra("gsearch", searchlist);
                             startActivity(intent);
                         } else if (key.equals("youtube")) {
+                            //get the id of the youtube link to play the video
                             String id = jsonObj.getString("id");
                             hashjson.clear();
                             hashjson.put("id", id);
+                            //pass the id into the youtube activity
                             Intent intent = new Intent(Homescreen_nav.this, Youtube.class);
                             intent.putExtra("search", (Serializable) hashjson);
                             startActivity(intent);
@@ -553,6 +549,7 @@ public class Homescreen_nav extends AppCompatActivity implements
                     }
                     Zipcode = addressList.get(0).getPostalCode();
                     String x = addressList.get(0).getAdminArea();
+                    //need state abbreviation for the api
                     switch (x) {
                         case "Alabama":
                             x = "AL";
@@ -794,6 +791,7 @@ public class Homescreen_nav extends AppCompatActivity implements
                     voiceresult = voiceresult.replace(" ", "_");
                 }
                 finishedstring = "";
+                //apend to the api url with the information needed for the right call
                 finishedstring = PythonApiUrl + "/" + voiceresult + "/" + state + "/" + city + "/yes";
                 getJsonInfo();
                 //updateweatherview();
@@ -810,6 +808,7 @@ public class Homescreen_nav extends AppCompatActivity implements
 
             @Override
             public void onError(int error) {
+                //if the error is 7 it could not recognize what the user said
                 if (error == 7)
                     Toast.makeText(getApplicationContext(), "Couldn't understand you. Please say your command again.", Toast.LENGTH_SHORT).show();
                 else
@@ -859,11 +858,13 @@ public class Homescreen_nav extends AppCompatActivity implements
         Log.d(TAG, "api result " + info.getFulfillment().getSpeech().toString());
         //Toast.makeText(getApplicationContext(), "IT WORKED " + info.getFulfillment().getSpeech().toString(), Toast.LENGTH_LONG).show();
 
+        //current way to call Text to Speech
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
             Bundle bundle = new Bundle();
             bundle.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
             tts.speak(info.getFulfillment().getSpeech().toString(), TextToSpeech.QUEUE_FLUSH, bundle, null);
         }
+        //old way to call Text to Speech
         else{
             HashMap<String, String> paramaters = new HashMap<>();
             paramaters.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_MUSIC));
@@ -886,7 +887,7 @@ public class Homescreen_nav extends AppCompatActivity implements
     @Override
     public void onListeningStarted() {
         Log.d(TAG, "api started to listen");
-        Toast.makeText(getApplicationContext(), "ITS LISTENING", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "ITS LISTENING", Toast.LENGTH_SHORT).show();
 
     }
 
@@ -901,5 +902,38 @@ public class Homescreen_nav extends AppCompatActivity implements
         Log.d(TAG, "api stopped listening");
 
     }
+
+    private void signIn() {
+        //sign into google
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, 101);
+    }
+
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+//        if (requestCode == 101) {
+//            // The Task returned from this call is always completed, no need to attach
+//            // a listener.
+//            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+//            //handleSignInResult(task);
+//        }
+//    }
+
+//    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+//        try {
+//            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+//
+//            // Signed in successfully, show authenticated UI.
+//            updateUI(account);
+//        } catch (ApiException e) {
+//            // The ApiException status code indicates the detailed failure reason.
+//            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+//            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+//            updateUI(null);
+//        }
+//    }
 }
 

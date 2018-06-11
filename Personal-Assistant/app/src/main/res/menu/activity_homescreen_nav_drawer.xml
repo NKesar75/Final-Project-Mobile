@@ -34,6 +34,7 @@
             android:title="Scheduling" />
         <item
             android:id="@+id/rememeber"
+            android:icon="@drawable/ic_remember"
             android:title="Rememeber" />
         <item
             android:id="@+id/settings"

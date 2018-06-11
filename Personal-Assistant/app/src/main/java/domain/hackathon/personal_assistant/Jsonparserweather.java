@@ -19,20 +19,19 @@ import java.net.URLConnection;
 
 public class Jsonparserweather {
     private static final String TAG = Jsonparserweather.class.getSimpleName();
-    public static String response;
-    public static boolean isdoneconn = false;
+    public String response;
     private String test = "https://personalassistant-ec554.appspot.com/recognize/weather/FL/Orlando";
 
 
     public Jsonparserweather() {
     }
 
-    public void makeServiceCall(final String reqUrl) {
+    public String makeServiceCall(final String reqUrl) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-
+                    //connect to the api url
                     URL url = new URL(reqUrl);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(10000);
@@ -46,10 +45,16 @@ public class Jsonparserweather {
                 } catch (Exception e) {
                     Log.e(TAG, "Exception: " + e.getMessage());
                 }
-                isdoneconn = true;
             }
         });
         thread.start();
+        try{
+            thread.join();
+            return response;
+        } catch (Exception e){
+            Log.e(TAG, "Exception: " + e.getMessage());
+        }
+        return null;
     }
 
     private String convertStreamToString(InputStream is) {
