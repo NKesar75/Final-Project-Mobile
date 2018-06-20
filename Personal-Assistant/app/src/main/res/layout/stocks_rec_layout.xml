@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/stocklogo"
+        android:layout_width="165dp"
+        android:layout_height="106dp"
+        android:layout_below="@+id/sline"
+        app:srcCompat="@mipmap/ic_logo" />
+
+    <TextView
+        android:id="@+id/stocktitle"
+        android:textSize="24dp"
+        android:text="title"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/stocklogo"/>
+
+    <TextView
+        android:id="@+id/stockprice"
+        android:text="price"
+        android:textAlignment="center"
+        android:layout_below="@+id/stocktitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/stocklogo"/>
+
+    <TextView
+        android:id="@+id/stocksize"
+        android:text="size"
+        android:textAlignment="center"
+        android:layout_below="@+id/stockprice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/stocklogo"/>
+
+
+</RelativeLayout>

@@ -13,13 +13,13 @@
             android:icon="@drawable/ic_byoutube"
             android:title="Youtube" />
         <item
-            android:id="@+id/banking"
-            android:icon="@drawable/ic_bank"
-            android:title="Banking" />
+            android:id="@+id/stocks"
+            android:icon="@drawable/ic_stock"
+            android:title="stocks" />
         <item
-            android:id="@+id/food"
-            android:icon="@drawable/ic_food"
-            android:title="Food" />
+            android:id="@+id/newsid"
+            android:icon="@drawable/ic_news"
+            android:title="news" />
         <item
             android:id="@+id/googleSearch"
             android:icon="@drawable/ic_search"

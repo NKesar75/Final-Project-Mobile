@@ -214,10 +214,10 @@ public class Homescreen_nav extends AppCompatActivity implements
                     startActivity(new Intent(Homescreen_nav.this, MapsActivity.class));
                 } else if (id == R.id.youtube) {
                     startActivity(new Intent(Homescreen_nav.this, Youtube.class));
-                } else if (id == R.id.banking) {
-
-                } else if (id == R.id.food) {
-
+                } else if (id == R.id.stocks) {
+                    startActivity(new Intent(Homescreen_nav.this, stocks.class));
+                } else if (id == R.id.newsid) {
+                    startActivity(new Intent(Homescreen_nav.this, news.class));
                 } else if (id == R.id.weatheritem) {
                     getLocation();
                     //start the weather activity with the location getting passed on

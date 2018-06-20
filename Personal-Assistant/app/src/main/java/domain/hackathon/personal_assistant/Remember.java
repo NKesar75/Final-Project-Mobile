@@ -40,17 +40,26 @@ import java.util.List;
 public class Remember extends AppCompatActivity {
 
 
-    List<String> rememberlist;
-    List<String> parsedlisst;
     RecyclerView reclist;
+    RecyclerView recYlist;
+    RecyclerView recLlist;
     DatabaseReference myRef;
     FirebaseDatabase mFirebaseDatabase;
     FirebaseAuth auth;
     StorageReference storageRef;
     FirebaseStorage storage;
-    private recAdapter mAdapter;
+    private rememberAdapter mgAdapter;
+    private rememberAdapter myAdapter;
+    private rememberAdapter mlAdapter;
+
     private RecyclerView.LayoutManager mLayoutManager;
+    private RecyclerView.LayoutManager mYoutubeLayoutManager;
+    private RecyclerView.LayoutManager mListLayoutManager;
+
     int pos;
+    List<rememberDisplay> googlelist;
+    List<rememberDisplay> youtubelist;
+    List<rememberDisplay> listlist;
 
 
     @Override
@@ -62,8 +71,10 @@ public class Remember extends AppCompatActivity {
         Homescreen_nav.whichlayout = "notes";
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         myRef = mFirebaseDatabase.getReference();
-        rememberlist = new ArrayList<String>();
-        parsedlisst = new ArrayList<String>();
+        googlelist = new ArrayList<>();
+        youtubelist = new ArrayList<>();
+        listlist = new ArrayList<>();
+
 
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
@@ -77,82 +88,26 @@ public class Remember extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //clear the current data so there is no duplicates
-                rememberlist.clear();
-                parsedlisst.clear();
+                googlelist.clear();
+                youtubelist.clear();
+                listlist.clear();
                 String thingtoremember;
                 for (DataSnapshot lists : dataSnapshot.getChildren()) {
                     thingtoremember = lists.getKey();
                     String parse = thingtoremember + "," + lists.getValue();
-                    thingtoremember = thingtoremember + "," + lists.getValue();
-                    //put a comma inbetween the key and the value for easier lookup later
-                    rememberlist.add(thingtoremember);
-
-                    //put a new line between the list that is getting displayed so it looks nicer
-//                    String[] parts = parse.split(",");
-//                    parse = parts[0] + "\n" + parts[2];
-//                    parsedlisst.add(parse);
-                }
-
-                for (int i = 0; i < rememberlist.size(); i++){
-                    String parse = rememberlist.get(i);
                     String[] parts = parse.split(",");
-                    if (parts[1].equals("Google"))
-                    {
-                        parse = "Google Search\n" + parts[0] + "\n" + parts[2];
-                        parsedlisst.add(parse);
-                    }
-                }
-                for (int i = 0; i < rememberlist.size(); i++){
-                    String parse = rememberlist.get(i);
-                    String[] parts = parse.split(",");
-                    if (parts[1].equals("Youtube"))
-                    {
-                        parse = "Youtube video\n" + parts[0] + "\n" + parts[2];
-                        parsedlisst.add(parse);
-                    }
-                }
-                for (int i = 0; i < rememberlist.size(); i++){
-                    String parse = rememberlist.get(i);
-                    String[] parts = parse.split(",");
-                    if (parts[1].equals("List"))
-                    {
-//                        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(parts[0] + ".txt");
-//
-//                        final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
-//                        dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-//                            @Override
-//                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-//                                String line = null;
-//                                StringBuilder sb = new StringBuilder();
-//                                String dis;
-//
-//                                try {
-//                                    FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
-//
-//                                    BufferedReader bufferedReader = new BufferedReader(fileReader);
-//
-//                                    while ((line = bufferedReader.readLine()) != null) {
-//                                        sb.append(line + "\n");
-//                                    }
-//                                    sb = sb.deleteCharAt(sb.length() - 1);
-//                                    dis = sb.toString();
-//                                    if (fileNameOnDevice != null)
-//                                        fileNameOnDevice.delete();
-//
-//                                    bufferedReader.close();
-//
-//
-//                                } catch (Exception ex) {
-//                                    Log.d("notesActivity", "File exception " + ex);
-//                                }
-//                            }
-//                        });
-                        parse = "List\n" + parts[0] + "\n" + parts[2];
-                        parsedlisst.add(parse);
-                    }
-                }
-                mAdapter.notifyDataSetChanged();
+                    rememberDisplay temp = new rememberDisplay(parts[1], parts[0], parts[2]);
+                    if (temp.type.equals("Google"))
+                        googlelist.add(temp);
+                    else if (temp.type.equals("Youtube"))
+                        youtubelist.add(temp);
+                    else if (temp.type.equals("List"))
+                        listlist.add(temp);
 
+                }
+                mgAdapter.notifyDataSetChanged();
+                mlAdapter.notifyDataSetChanged();
+                myAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -161,15 +116,17 @@ public class Remember extends AppCompatActivity {
             }
         });
 
-        reclist = (RecyclerView) findViewById(R.id.rememberreclist);
+        reclist = (RecyclerView) findViewById(R.id.remembergreclist);
+        recYlist = (RecyclerView) findViewById(R.id.rememberyreclist);
+        recLlist = (RecyclerView) findViewById(R.id.rememberlreclist);
 
 
-        mAdapter = new recAdapter(parsedlisst);
+        mgAdapter = new rememberAdapter(googlelist, getApplicationContext());
         mLayoutManager = new LinearLayoutManager(this);
         reclist.setLayoutManager(mLayoutManager);
         reclist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         reclist.setItemAnimator(new DefaultItemAnimator());
-        reclist.setAdapter(mAdapter);
+        reclist.setAdapter(mgAdapter);
         reclist.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             GestureDetector gestureDetector = new GestureDetector(Remember.this, new GestureDetector.SimpleOnGestureListener() {
 
@@ -185,17 +142,16 @@ public class Remember extends AppCompatActivity {
                     View child = reclist.findChildViewUnder(e.getX(), e.getY());
                     pos = reclist.getChildAdapterPosition(child);
                     AlertDialog.Builder builder = new AlertDialog.Builder(Remember.this);
-                    String toparse = rememberlist.get(pos);
-                    final String[] parts = toparse.split(",");
+                    final rememberDisplay toparse = googlelist.get(pos);
                     builder.setTitle("Remove");
-                    builder.setMessage("Would you like to remove  " + parts[0] + " from Remember");
+                    builder.setMessage("Would you like to remove  " + toparse.title + " from Remember");
                     builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK button
                             //remove the data from firebase
                             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
-                            ref.child(auth.getCurrentUser().getUid()).child("remeb").child(parts[0]).removeValue();
-                            mAdapter.notifyDataSetChanged();
+                            ref.child(auth.getCurrentUser().getUid()).child("remeb").child(toparse.title).removeValue();
+                            mgAdapter.notifyDataSetChanged();
                         }
                     });
                     builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
@@ -218,56 +174,10 @@ public class Remember extends AppCompatActivity {
 
                 if (ChildView != null && gestureDetector.onTouchEvent(e)) {
                     pos = rv.getChildAdapterPosition(ChildView);
-                    String toparse = parsedlisst.get(pos);
-                    final String[] parts = toparse.split("\n");
-                    //start the correct activity base on what information is (google, Youtube, List)
-                    if (parts[0].equals("Google Search")) {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse(parts[2]));
-                        startActivity(browserIntent);
-                    } else if (parts[0].equals("Youtube video")) {
-                        HashMap<String, String> map = new HashMap<>();
-                        map.put("id", parts[2]);
-                        map.put("title", parts[1]);
-                        Intent intent = new Intent(Remember.this, Youtube.class);
-                        intent.putExtra("search", map);
-                        startActivity(intent);
-                    } else if (parts[0].equals("List")) {
-                        StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(parts[1] + ".txt");
-
-                        final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
-                        dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                String line = null;
-                                StringBuilder sb = new StringBuilder();
-                                String dis;
-
-                                try {
-                                    FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
-
-                                    BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-                                    while ((line = bufferedReader.readLine()) != null) {
-                                        sb.append(line + "\n");
-                                    }
-                                    sb = sb.deleteCharAt(sb.length() - 1);
-                                    dis = sb.toString();
-                                    if (fileNameOnDevice != null)
-                                        fileNameOnDevice.delete();
-
-                                    bufferedReader.close();
-                                    Intent sendintent = new Intent(Remember.this, addNote.class);
-                                    sendintent.putExtra("listtoedit", dis);
-                                    sendintent.putExtra("name", parts[1]);
-                                    //finish();
-                                    startActivity(sendintent);
-                                } catch (Exception ex) {
-                                    Log.d("notesActivity", "File exception " + ex);
-                                }
-                            }
-                        });
-                    }
+                    rememberDisplay toparse = googlelist.get(pos);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse(toparse.body));
+                    startActivity(browserIntent);
                 }
 
                 return false;
@@ -285,5 +195,186 @@ public class Remember extends AppCompatActivity {
             }
         });
 
+        myAdapter = new rememberAdapter(youtubelist, getApplicationContext());
+        mYoutubeLayoutManager = new LinearLayoutManager(this);
+        recYlist.setLayoutManager(mYoutubeLayoutManager);
+        recYlist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        recYlist.setItemAnimator(new DefaultItemAnimator());
+        recYlist.setAdapter(myAdapter);
+        recYlist.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(Remember.this, new GestureDetector.SimpleOnGestureListener() {
+
+                @Override
+                public boolean onSingleTapUp(MotionEvent motionEvent) {
+
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+
+                    View child = recYlist.findChildViewUnder(e.getX(), e.getY());
+                    pos = recYlist.getChildAdapterPosition(child);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Remember.this);
+                    final rememberDisplay toparse = youtubelist.get(pos);
+                    builder.setTitle("Remove");
+                    builder.setMessage("Would you like to remove  " + toparse.title + " from Remember");
+                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                            //remove the data from firebase
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                            ref.child(auth.getCurrentUser().getUid()).child("remeb").child(toparse.title).removeValue();
+                            myAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog do nothing
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+
+
+            });
+
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                View ChildView;
+
+                ChildView = rv.findChildViewUnder(e.getX(), e.getY());
+
+                if (ChildView != null && gestureDetector.onTouchEvent(e)) {
+                    pos = rv.getChildAdapterPosition(ChildView);
+                    rememberDisplay toparse = youtubelist.get(pos);
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("id", toparse.body);
+                    map.put("title", toparse.title);
+                    Intent intent = new Intent(Remember.this, Youtube.class);
+                    intent.putExtra("search", map);
+                    startActivity(intent);
+                }
+
+                return false;
+            }
+
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
+
+        mlAdapter = new rememberAdapter(listlist, getApplicationContext());
+        mListLayoutManager = new LinearLayoutManager(this);
+        recLlist.setLayoutManager(mListLayoutManager);
+        recLlist.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        recLlist.setItemAnimator(new DefaultItemAnimator());
+        recLlist.setAdapter(mlAdapter);
+        recLlist.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(Remember.this, new GestureDetector.SimpleOnGestureListener() {
+
+                @Override
+                public boolean onSingleTapUp(MotionEvent motionEvent) {
+
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+
+                    View child = recLlist.findChildViewUnder(e.getX(), e.getY());
+                    pos = recLlist.getChildAdapterPosition(child);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Remember.this);
+                    final rememberDisplay toparse = listlist.get(pos);
+                    builder.setTitle("Remove");
+                    builder.setMessage("Would you like to remove  " + toparse.title + " from Remember");
+                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                            //remove the data from firebase
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                            ref.child(auth.getCurrentUser().getUid()).child("remeb").child(toparse.title).removeValue();
+                            mlAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog do nothing
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+
+
+            });
+
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                View ChildView;
+
+                ChildView = rv.findChildViewUnder(e.getX(), e.getY());
+
+                if (ChildView != null && gestureDetector.onTouchEvent(e)) {
+                    pos = rv.getChildAdapterPosition(ChildView);
+                    final rememberDisplay toparse = listlist.get(pos);
+                    StorageReference dlref = storageRef.child("text-files").child(auth.getCurrentUser().getUid().toString()).child(toparse.title + ".txt");
+
+                    final File fileNameOnDevice = new File(getApplicationContext().getFilesDir() + "dlfile.txt");
+                    dlref.getFile(fileNameOnDevice).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            String line = null;
+                            StringBuilder sb = new StringBuilder();
+                            String dis;
+
+                            try {
+                                FileReader fileReader = new FileReader(fileNameOnDevice.getAbsolutePath().toString());
+
+                                BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                                while ((line = bufferedReader.readLine()) != null) {
+                                    sb.append(line + "\n");
+                                }
+                                sb = sb.deleteCharAt(sb.length() - 1);
+                                dis = sb.toString();
+                                if (fileNameOnDevice != null)
+                                    fileNameOnDevice.delete();
+
+                                bufferedReader.close();
+                                Intent sendintent = new Intent(Remember.this, addNote.class);
+                                sendintent.putExtra("listtoedit", dis);
+                                sendintent.putExtra("name", toparse.title);
+                                //finish();
+                                startActivity(sendintent);
+                            } catch (Exception ex) {
+                                Log.d("notesActivity", "File exception " + ex);
+                            }
+                        }
+                    });
+                }
+
+                return false;
+            }
+
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
     }
 }

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="#b3dfff"
+    android:background="@drawable/gradient"
     tools:openDrawer="start">
     <!--#b0e9fd-->
     <!--#b3e6ff-->
@@ -59,7 +59,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        android:background="#b3ecff"
+        android:background="@drawable/gradient"
         android:textColor="@color/Button_color"
         app:headerLayout="@layout/nav_header_homescreen_nav"
         app:menu="@menu/activity_homescreen_nav_drawer" />

@@ -60,7 +60,9 @@
             android:name=".calender"
             android:label="@string/title_activity_calender"
             android:theme="@style/AppTheme" />
-        <activity android:name=".Remember"></activity>
+        <activity android:name=".Remember" />
+        <activity android:name=".stocks" />
+        <activity android:name=".news"></activity>
     </application>
 
 </manifest>
