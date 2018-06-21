@@ -78,7 +78,7 @@ public class weather extends AppCompatActivity {
                         Intent intent = getIntent();
                         String state = intent.getStringExtra("state");
 
-                        finishedurlstring = searchurl + "weather/" + state + "/" + weathersearch + "/";
+                        finishedurlstring = searchurl + "weather/" + "FL" + "/" + weathersearch + "/";
                         Log.d(TAG, finishedurlstring);
 
                     }

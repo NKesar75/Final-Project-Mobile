@@ -70,13 +70,42 @@ public class weatherRecAdapter extends RecyclerView.Adapter<weatherRecAdapter.Vi
         HashMap<String, String> info;
 
         info = mDataset.get(position);
-        glide.load(info.get("picurl")).into(holder.image);
-        holder.temph.setText("High: " + info.get("temp_highf") + (char) 0x00B0 + "F");
-        holder.templ.setText("Low: " + info.get("temp_lowf") + (char) 0x00B0 + "F");
-        holder.condition.setText(info.get("condition"));
-        holder.humidity.setText("Humidity: " + info.get("humidity"));
-        holder.precip.setText("Precipitation: " + info.get("precip"));
-        holder.day.setText(info.get("day"));
+//        if (position == 0){
+            glide.load(info.get("picurl")).into(holder.image);
+            holder.temph.setText("High: " + info.get("temp_highf") + (char) 0x00B0 + "F");
+            holder.templ.setText("Low: " + info.get("temp_lowf") + (char) 0x00B0 + "F");
+            holder.condition.setText(info.get("condition"));
+            holder.humidity.setText("Humidity: " + info.get("humidity"));
+            holder.precip.setText("Precipitation: " + info.get("precip") + "%");
+            holder.day.setText(info.get("day"));
+//        }
+//        else {
+//            glide.load(info.get("picurl")).into(holder.image);
+//            holder.temph.setText("High: " + info.get("temp_highf") + (char) 0x00B0 + "F");
+//            holder.templ.setText("Low: " + info.get("temp_lowf") + (char) 0x00B0 + "F");
+//            holder.day.setText(info.get("day"));
+//            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) holder.condition.getLayoutParams();
+//            params.topMargin = 0;
+//            params.alignWithParent = true;
+//            holder.condition.setLayoutParams(params);
+//            holder.condition.setVisibility(View.INVISIBLE);
+//            holder.humidity.setLayoutParams(params);
+//            holder.humidity.setVisibility(View.INVISIBLE);
+//            holder.precip.setLayoutParams(params);
+//            holder.precip.setVisibility(View.INVISIBLE);
+//            holder.image.setLayoutParams(new RelativeLayout.LayoutParams(200, 200));
+//            RelativeLayout.LayoutParams imageparams = (RelativeLayout.LayoutParams) holder.image.getLayoutParams();
+//            imageparams.addRule(RelativeLayout.ALIGN_TOP, holder.day.getId());
+//            imageparams.topMargin = 100;
+//            imageparams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+//            holder.image.setLayoutParams(imageparams);
+//            RelativeLayout.LayoutParams temph = (RelativeLayout.LayoutParams) holder.temph.getLayoutParams();
+//            temph.addRule(RelativeLayout.ALIGN_LEFT, holder.image.getId());
+//            holder.temph.setLayoutParams(temph);
+//            RelativeLayout.LayoutParams tmpl = (RelativeLayout.LayoutParams) holder.templ.getLayoutParams();
+//            tmpl.addRule(RelativeLayout.ALIGN_LEFT, holder.image.getId());
+//            holder.templ.setLayoutParams(tmpl);
+//        }
 
     }
 
